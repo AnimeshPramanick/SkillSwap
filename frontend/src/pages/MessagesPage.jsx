@@ -30,6 +30,7 @@ const MessagesPage = () => {
 
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const fetchingConversationsRef = useRef(false);
 
   useEffect(() => {
     fetchConversations();
@@ -65,15 +66,24 @@ const MessagesPage = () => {
   };
 
   const fetchConversations = async () => {
+    // Prevent duplicate fetches
+    if (fetchingConversationsRef.current) return;
+
     try {
+      fetchingConversationsRef.current = true;
       setLoading(true);
       const response = await apiService.messages.getConversations();
       setConversations(response.data.conversations || []);
     } catch (error) {
       console.error("Error fetching conversations:", error);
-      toast.error("Failed to load conversations");
+      // Only show toast once, not repeatedly
+      if (!error.isShown) {
+        error.isShown = true;
+        toast.error("Failed to load conversations");
+      }
     } finally {
       setLoading(false);
+      fetchingConversationsRef.current = false;
     }
   };
 
@@ -85,7 +95,7 @@ const MessagesPage = () => {
       await apiService.messages.markAsRead(userId);
     } catch (error) {
       console.error("Error fetching messages:", error);
-      toast.error("Failed to load messages");
+      // Don't show toast error repeatedly
     }
   };
 
@@ -112,7 +122,9 @@ const MessagesPage = () => {
       setMessages((prev) => [...prev, message]);
       // Mark as read if conversation is open
       if (message.senderId === selectedUserId) {
-        apiService.messages.markAsRead(selectedUserId);
+        apiService.messages.markAsRead(selectedUserId).catch((err) => {
+          console.error("Error marking as read:", err);
+        });
       }
     }
     // Update conversations list

@@ -210,17 +210,15 @@ router.get("/conversations", verifyToken, async (req, res) => {
     const userId = req.user.id;
     const db = require("../config/firebase").getFirestore();
 
-    // Get all messages where user is sender or recipient
+    // Get all messages where user is sender or recipient (without orderBy to avoid index requirement)
     const sentSnapshot = await db
       .collection("messages")
       .where("senderId", "==", userId)
-      .orderBy("timestamp", "desc")
       .get();
 
     const receivedSnapshot = await db
       .collection("messages")
       .where("recipientId", "==", userId)
-      .orderBy("timestamp", "desc")
       .get();
 
     // Combine and get unique conversations
@@ -231,29 +229,43 @@ router.get("/conversations", verifyToken, async (req, res) => {
       const otherUserId =
         message.senderId === userId ? message.recipientId : message.senderId;
 
-      if (!conversationMap.has(otherUserId)) {
-        // Get the other user's details
-        const otherUser = await getUser(otherUserId);
+      const existingConv = conversationMap.get(otherUserId);
 
-        if (otherUser && otherUser.isActive) {
-          conversationMap.set(otherUserId, {
-            id: otherUserId,
-            participant: {
-              id: otherUser.id,
-              username: otherUser.username,
-              profile: otherUser.profile,
-              isOnline: otherUser.isOnline,
-              lastSeen: otherUser.lastSeen,
-            },
-            lastMessage: {
-              content: message.message,
-              timestamp: message.timestamp,
-              senderId: message.senderId,
-              isRead: message.isRead,
-            },
-            unreadCount: 0,
-          });
+      // Only update if this is the first message or a newer message
+      if (
+        !existingConv ||
+        !existingConv.lastMessage ||
+        (message.timestamp &&
+          (!existingConv.lastMessage.timestamp ||
+            new Date(message.timestamp) >
+              new Date(existingConv.lastMessage.timestamp)))
+      ) {
+        // Get the other user's details if not already loaded
+        let otherUser = existingConv?.participant;
+        if (!otherUser) {
+          const userData = await getUser(otherUserId);
+          if (!userData || !userData.isActive) return;
+
+          otherUser = {
+            id: userData.id,
+            username: userData.username,
+            profile: userData.profile,
+            isOnline: userData.isOnline,
+            lastSeen: userData.lastSeen,
+          };
         }
+
+        conversationMap.set(otherUserId, {
+          id: otherUserId,
+          participant: otherUser,
+          lastMessage: {
+            content: message.message,
+            timestamp: message.timestamp,
+            senderId: message.senderId,
+            isRead: message.isRead,
+          },
+          unreadCount: existingConv?.unreadCount || 0,
+        });
       }
     };
 
