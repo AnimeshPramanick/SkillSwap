@@ -293,13 +293,17 @@ const MessagesPage = () => {
       });
 
       newPeer.on("signal", (data) => {
-        console.log("Sending call signal");
+        console.log("=== SENDING CALL ===");
+        console.log("Sending call signal to:", selectedUserId);
+        console.log("Caller ID:", user.uid || user.id);
+        console.log("Caller name:", user.profile?.name || user.username);
         socket.emit("call_user", {
           recipientId: selectedUserId,
           signalData: data,
           from: user.uid || user.id,
           name: user.profile?.name || user.username,
         });
+        console.log("Call signal sent successfully");
       });
 
       newPeer.on("stream", (remoteStream) => {
@@ -337,8 +341,14 @@ const MessagesPage = () => {
   };
 
   const handleIncomingCall = ({ from, name, signal }) => {
-    console.log("Incoming call from:", from, name);
+    console.log("=== INCOMING CALL RECEIVED ===");
+    console.log("From:", from);
+    console.log("Name:", name);
+    console.log("Signal:", signal);
+    console.log("Current user:", user?.uid || user?.id);
+    console.log("Setting incomingCall state...");
     setIncomingCall({ from, name, signal });
+    toast("📞 Incoming call from " + name);
   };
 
   const acceptCall = async () => {
