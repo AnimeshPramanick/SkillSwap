@@ -89,12 +89,16 @@ const MessagesPage = () => {
 
   const fetchMessages = async (userId) => {
     try {
+      console.log(`[DEBUG] Fetching messages for user: ${userId}`);
       const response = await apiService.messages.getConversation(userId);
+      console.log(`[DEBUG] Received response:`, response.data);
+      console.log(`[DEBUG] Messages count:`, response.data.messages?.length);
       setMessages(response.data.messages || []);
       // Mark as read
       await apiService.messages.markAsRead(userId);
     } catch (error) {
       console.error("Error fetching messages:", error);
+      console.error("Error details:", error.response?.data);
       // Don't show toast error repeatedly
     }
   };

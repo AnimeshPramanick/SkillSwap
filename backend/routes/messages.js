@@ -146,8 +146,42 @@ router.get(
         parseInt(limit)
       );
 
+      console.log(
+        `[DEBUG] Fetched ${messages.length} messages for conversation between ${req.user.id} and ${userId}`
+      );
+      console.log("[DEBUG] First message sample:", messages[0]);
+
+      // Convert Firestore timestamps to ISO strings for consistent serialization
+      const messagesWithTimestamps = messages.map((msg) => {
+        let timestampISO = null;
+        if (msg.timestamp) {
+          if (msg.timestamp.toDate) {
+            timestampISO = msg.timestamp.toDate().toISOString();
+          } else if (msg.timestamp._seconds) {
+            timestampISO = new Date(
+              msg.timestamp._seconds * 1000
+            ).toISOString();
+          } else {
+            timestampISO = new Date(msg.timestamp).toISOString();
+          }
+        }
+        return {
+          ...msg,
+          timestamp: timestampISO,
+        };
+      });
+
+      console.log(
+        "[DEBUG] Messages after timestamp conversion:",
+        messagesWithTimestamps.length
+      );
+      console.log(
+        "[DEBUG] First converted message:",
+        messagesWithTimestamps[0]
+      );
+
       // Mark messages as read (for messages sent to current user)
-      const unreadMessages = messages.filter(
+      const unreadMessages = messagesWithTimestamps.filter(
         (msg) => msg.recipientId === req.user.id && !msg.isRead
       );
 
@@ -165,11 +199,11 @@ router.get(
             isOnline: otherUser.isOnline,
           },
         },
-        messages: messages.reverse(), // Reverse to show oldest first
+        messages: messagesWithTimestamps.reverse(), // Reverse to show oldest first
         pagination: {
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: messages.length === parseInt(limit),
+          hasMore: messagesWithTimestamps.length === parseInt(limit),
         },
         unreadCount: unreadMessages.length,
       });
@@ -231,14 +265,19 @@ router.get("/conversations", verifyToken, async (req, res) => {
 
       const existingConv = conversationMap.get(otherUserId);
 
+      // Helper to get timestamp in milliseconds
+      const getTime = (timestamp) => {
+        if (!timestamp) return 0;
+        if (timestamp.toDate) return timestamp.toDate().getTime();
+        if (timestamp._seconds) return timestamp._seconds * 1000;
+        return new Date(timestamp).getTime() || 0;
+      };
+
       // Only update if this is the first message or a newer message
       if (
         !existingConv ||
         !existingConv.lastMessage ||
-        (message.timestamp &&
-          (!existingConv.lastMessage.timestamp ||
-            new Date(message.timestamp) >
-              new Date(existingConv.lastMessage.timestamp)))
+        getTime(message.timestamp) > getTime(existingConv.lastMessage.timestamp)
       ) {
         // Get the other user's details if not already loaded
         let otherUser = existingConv?.participant;
@@ -255,12 +294,26 @@ router.get("/conversations", verifyToken, async (req, res) => {
           };
         }
 
+        // Convert timestamp to ISO string for consistent JSON serialization
+        let timestampISO = null;
+        if (message.timestamp) {
+          if (message.timestamp.toDate) {
+            timestampISO = message.timestamp.toDate().toISOString();
+          } else if (message.timestamp._seconds) {
+            timestampISO = new Date(
+              message.timestamp._seconds * 1000
+            ).toISOString();
+          } else {
+            timestampISO = new Date(message.timestamp).toISOString();
+          }
+        }
+
         conversationMap.set(otherUserId, {
           id: otherUserId,
           participant: otherUser,
           lastMessage: {
             content: message.message,
-            timestamp: message.timestamp,
+            timestamp: timestampISO,
             senderId: message.senderId,
             isRead: message.isRead,
           },
@@ -325,8 +378,15 @@ router.get("/conversations", verifyToken, async (req, res) => {
 
     // Sort by last message timestamp (conversations without messages go to bottom)
     conversations.sort((a, b) => {
-      const timeA = a.lastMessage?.timestamp?.toDate?.() || new Date(0);
-      const timeB = b.lastMessage?.timestamp?.toDate?.() || new Date(0);
+      const getTime = (timestamp) => {
+        if (!timestamp) return 0;
+        if (timestamp.toDate) return timestamp.toDate().getTime();
+        if (timestamp._seconds) return timestamp._seconds * 1000;
+        return new Date(timestamp).getTime() || 0;
+      };
+
+      const timeA = getTime(a.lastMessage?.timestamp);
+      const timeB = getTime(b.lastMessage?.timestamp);
       return timeB - timeA;
     });
 

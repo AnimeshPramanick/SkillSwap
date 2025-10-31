@@ -145,14 +145,65 @@ const createMessage = async (messageData) => {
 };
 
 const getConversationMessages = async (userId1, userId2, limit = 50) => {
-  const snapshot = await firestore
-    .collection("messages")
-    .where("participants", "==", [userId1, userId2].sort().join("_"))
-    .orderBy("timestamp", "desc")
-    .limit(limit)
-    .get();
+  const participantsKey = [userId1, userId2].sort().join("_");
+  console.log(`[DEBUG] Fetching messages for participants: ${participantsKey}`);
 
-  return snapshot.docs.map((doc) => doc.data());
+  try {
+    // Try with orderBy first (requires index)
+    const snapshot = await firestore
+      .collection("messages")
+      .where("participants", "==", participantsKey)
+      .orderBy("timestamp", "desc")
+      .limit(limit)
+      .get();
+
+    console.log(`[DEBUG] Found ${snapshot.docs.length} messages in Firestore`);
+
+    const messages = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      console.log(`[DEBUG] Message data:`, {
+        id: data.id,
+        senderId: data.senderId,
+        recipientId: data.recipientId,
+        message: data.message,
+        participants: data.participants,
+        hasTimestamp: !!data.timestamp,
+      });
+      return data;
+    });
+
+    return messages;
+  } catch (error) {
+    // If index doesn't exist, fallback to query without orderBy and sort in memory
+    console.log(
+      "[DEBUG] OrderBy failed, trying without index requirement:",
+      error.message
+    );
+
+    const snapshot = await firestore
+      .collection("messages")
+      .where("participants", "==", participantsKey)
+      .get();
+
+    console.log(
+      `[DEBUG] Found ${snapshot.docs.length} messages without orderBy`
+    );
+
+    const messages = snapshot.docs.map((doc) => doc.data());
+
+    // Sort by timestamp in memory
+    messages.sort((a, b) => {
+      const getTime = (timestamp) => {
+        if (!timestamp) return 0;
+        if (timestamp.toDate) return timestamp.toDate().getTime();
+        if (timestamp._seconds) return timestamp._seconds * 1000;
+        return new Date(timestamp).getTime() || 0;
+      };
+      return getTime(b.timestamp) - getTime(a.timestamp);
+    });
+
+    return messages.slice(0, limit);
+  }
 };
 
 const createSession = async (sessionData) => {
