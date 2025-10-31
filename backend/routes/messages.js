@@ -83,7 +83,13 @@ router.post(
       // Emit socket event to recipient if they're connected
       const io = req.app.get("io");
       if (io) {
+        console.log(
+          `Emitting new_message to user_${recipientId}:`,
+          messageResponse
+        );
         io.to(`user_${recipientId}`).emit("new_message", messageResponse);
+      } else {
+        console.log("IO instance not found!");
       }
 
       res.status(201).json({

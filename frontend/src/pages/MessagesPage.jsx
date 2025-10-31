@@ -99,9 +99,15 @@ const MessagesPage = () => {
   };
 
   const handleNewMessage = (message) => {
+    console.log("Received new message:", message);
+    console.log("Current user:", user);
+    console.log("Selected user ID:", selectedUserId);
+
+    const currentUserId = user?.uid || user?.id;
+
     if (
       message.senderId === selectedUserId ||
-      message.recipientId === selectedUserId
+      message.recipientId === currentUserId
     ) {
       setMessages((prev) => [...prev, message]);
       // Mark as read if conversation is open
@@ -217,8 +223,8 @@ const MessagesPage = () => {
   }
 
   return (
-    <div className="h-screen bg-neutral-50 pt-16">
-      <div className="h-full flex">
+    <div className="fixed inset-0 pt-16 bg-neutral-50">
+      <div className="h-full flex overflow-hidden">
         {/* Conversations Sidebar */}
         <div className="w-80 bg-white border-r border-neutral-200 flex flex-col">
           {/* Header */}
@@ -358,7 +364,8 @@ const MessagesPage = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => {
-                const isOwn = message.senderId === user?.id;
+                const currentUserId = user?.uid || user?.id;
+                const isOwn = message.senderId === currentUserId;
                 return (
                   <div
                     key={message.id}

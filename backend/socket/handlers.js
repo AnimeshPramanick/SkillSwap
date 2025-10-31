@@ -48,6 +48,7 @@ const setupSocketHandlers = (io) => {
 
     // Join user to their personal room
     socket.join(`user_${socket.userId}`);
+    console.log(`User ${socket.userId} joined room: user_${socket.userId}`);
 
     // Notify about new connection
     socket.emit("connected", {
