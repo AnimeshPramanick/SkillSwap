@@ -187,6 +187,8 @@ const apiService = {
     sendTypingIndicator: (recipientId, isTyping) =>
       api.post("/messages/typing", { recipientId, isTyping }),
     deleteMessage: (messageId) => api.delete(`/messages/${messageId}`),
+    deleteConversation: (userId) =>
+      api.delete(`/messages/conversation/${userId}`),
     uploadFile: (fileData) => api.post("/messages/upload", fileData),
     searchMessages: (userId, query, params = {}) =>
       api.get(`/messages/conversation/${userId}/search`, {
@@ -196,6 +198,7 @@ const apiService = {
 
   // Sessions endpoints
   sessions: {
+    create: (sessionData) => api.post("/sessions", sessionData),
     createSession: (sessionData) => api.post("/sessions", sessionData),
     getUserSessions: (params = {}) => api.get("/sessions", { params }),
     getSessionDetails: (sessionId) => api.get(`/sessions/${sessionId}`),
@@ -207,6 +210,8 @@ const apiService = {
       api.post(`/sessions/${sessionId}/complete`, feedback),
     getUserAvailability: (userId, params = {}) =>
       api.get(`/sessions/availability/${userId}`, { params }),
+    createInstantMeeting: (participantId) =>
+      api.post("/sessions/instant", { participantId }),
   },
 
   // Health check

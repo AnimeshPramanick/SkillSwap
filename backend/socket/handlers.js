@@ -205,6 +205,53 @@ const setupSocketHandlers = (io) => {
       });
     });
 
+    // Video call handlers
+    socket.on("call_user", (data) => {
+      const { recipientId, signalData, from, name } = data;
+      io.to(`user_${recipientId}`).emit("incoming_call", {
+        signal: signalData,
+        from,
+        name,
+      });
+    });
+
+    socket.on("accept_call", (data) => {
+      const { signal, to } = data;
+      io.to(`user_${to}`).emit("call_accepted", {
+        signal,
+      });
+    });
+
+    socket.on("reject_call", (data) => {
+      const { to } = data;
+      io.to(`user_${to}`).emit("call_rejected", {
+        from: socket.userId,
+      });
+    });
+
+    socket.on("call_ended", (data) => {
+      const { remoteUserId } = data;
+      io.to(`user_${remoteUserId}`).emit("call_ended", {
+        from: socket.userId,
+      });
+    });
+
+    socket.on("ice_candidate", (data) => {
+      const { recipientId, candidate } = data;
+      io.to(`user_${recipientId}`).emit("ice_candidate", {
+        candidate,
+        from: socket.userId,
+      });
+    });
+
+    socket.on("call_signal", (data) => {
+      const { recipientId, signal } = data;
+      io.to(`user_${recipientId}`).emit("call_signal", {
+        signal,
+        from: socket.userId,
+      });
+    });
+
     socket.on("end_video_call", (data) => {
       const { recipientId } = data;
       io.to(`user_${recipientId}`).emit("call_ended", {

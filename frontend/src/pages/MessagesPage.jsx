@@ -5,13 +5,19 @@ import { useSocket } from "../contexts/SocketContext";
 import { useMessages } from "../contexts/MessagesContext";
 import { apiService } from "../services/api";
 import { toast } from "react-hot-toast";
+import SimplePeer from "simple-peer";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import VideoCallModal from "../components/ui/VideoCallModal";
+import ScheduleSessionModal from "../components/ui/ScheduleSessionModal";
 import {
   ChatBubbleLeftRightIcon,
   PaperAirplaneIcon,
   MagnifyingGlassIcon,
   EllipsisVerticalIcon,
   PhotoIcon,
+  TrashIcon,
+  CalendarIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 import { format, isToday, isYesterday } from "date-fns";
 
@@ -29,10 +35,17 @@ const MessagesPage = () => {
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [peer, setPeer] = useState(null);
+  const [incomingCall, setIncomingCall] = useState(null);
 
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fetchingConversationsRef = useRef(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     fetchConversations();
@@ -50,11 +63,23 @@ const MessagesPage = () => {
       socket.on("new_message", handleNewMessage);
       socket.on("typing_start", handleTypingStart);
       socket.on("typing_stop", handleTypingStop);
+      socket.on("incoming_call", handleIncomingCall);
+      socket.on("call_accepted", handleCallAccepted);
+      socket.on("call_rejected", handleCallRejected);
+      socket.on("call_ended", handleCallEnded);
+      socket.on("ice_candidate", handleIceCandidate);
+      socket.on("call_signal", handleCallSignal);
 
       return () => {
         socket.off("new_message", handleNewMessage);
         socket.off("typing_start", handleTypingStart);
         socket.off("typing_stop", handleTypingStop);
+        socket.off("incoming_call", handleIncomingCall);
+        socket.off("call_accepted", handleCallAccepted);
+        socket.off("call_rejected", handleCallRejected);
+        socket.off("call_ended", handleCallEnded);
+        socket.off("ice_candidate", handleIceCandidate);
+        socket.off("call_signal", handleCallSignal);
       };
     }
   }, [socket, isConnected, selectedUserId]);
@@ -205,6 +230,198 @@ const MessagesPage = () => {
   const handleSelectConversation = (userId) => {
     navigate(`/messages/${userId}`);
   };
+
+  // Menu handlers
+  const handleDeleteConversation = async () => {
+    try {
+      await apiService.messages.deleteConversation(selectedUserId);
+      toast.success("Conversation deleted");
+      setShowDeleteConfirm(false);
+      setShowMenu(false);
+      navigate("/messages");
+      fetchConversations();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast.error("Failed to delete conversation");
+    }
+  };
+
+  const handleScheduleSession = () => {
+    setShowMenu(false);
+    setShowScheduleModal(true);
+  };
+
+  const handleInstantMeeting = async () => {
+    try {
+      setShowMenu(false);
+
+      // Create instant meeting session
+      await apiService.sessions.createInstantMeeting(selectedUserId);
+
+      // Initiate call
+      initiateCall();
+
+      toast.success("Starting instant meeting...");
+    } catch (error) {
+      console.error("Error starting instant meeting:", error);
+      toast.error("Failed to start meeting");
+    }
+  };
+
+  // Video call handlers
+  const initiateCall = async () => {
+    try {
+      console.log("Initiating call to:", selectedUserId);
+
+      const newPeer = new SimplePeer({
+        initiator: true,
+        trickle: false,
+        stream: false, // We'll add stream in VideoCallModal
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+          ],
+        },
+      });
+
+      newPeer.on("signal", (data) => {
+        console.log("Sending call signal");
+        socket.emit("call_user", {
+          recipientId: selectedUserId,
+          signalData: data,
+          from: user.uid || user.id,
+          name: user.profile?.name || user.username,
+        });
+      });
+
+      newPeer.on("error", (err) => {
+        console.error("Peer error:", err);
+        toast.error("Call connection failed: " + err.message);
+        setShowVideoCall(false);
+        setPeer(null);
+      });
+
+      newPeer.on("close", () => {
+        console.log("Peer closed");
+        setShowVideoCall(false);
+        setPeer(null);
+      });
+
+      setPeer(newPeer);
+      setShowVideoCall(true);
+    } catch (error) {
+      console.error("Error initiating call:", error);
+      toast.error("Failed to initiate call");
+    }
+  };
+
+  const handleIncomingCall = ({ from, name, signal }) => {
+    console.log("Incoming call from:", from, name);
+    setIncomingCall({ from, name, signal });
+  };
+
+  const acceptCall = () => {
+    console.log("Accepting call from:", incomingCall.from);
+
+    const newPeer = new SimplePeer({
+      initiator: false,
+      trickle: false,
+      stream: false, // We'll add stream in VideoCallModal
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+        ],
+      },
+    });
+
+    newPeer.on("signal", (data) => {
+      console.log("Sending accept signal");
+      socket.emit("accept_call", {
+        signal: data,
+        to: incomingCall.from,
+      });
+    });
+
+    newPeer.on("error", (err) => {
+      console.error("Peer error:", err);
+      toast.error("Call connection failed: " + err.message);
+      setShowVideoCall(false);
+      setPeer(null);
+    });
+
+    newPeer.on("close", () => {
+      console.log("Peer closed");
+      setShowVideoCall(false);
+      setPeer(null);
+    });
+
+    console.log("Signaling peer with incoming data");
+    newPeer.signal(incomingCall.signal);
+    setPeer(newPeer);
+    setShowVideoCall(true);
+    setIncomingCall(null);
+  };
+
+  const rejectCall = () => {
+    socket.emit("reject_call", { to: incomingCall.from });
+    setIncomingCall(null);
+    toast("Call rejected");
+  };
+
+  const handleCallAccepted = ({ signal }) => {
+    if (peer) {
+      peer.signal(signal);
+    }
+  };
+
+  const handleCallRejected = () => {
+    toast.error("Call was rejected");
+    if (peer) {
+      peer.destroy();
+    }
+    setPeer(null);
+    setShowVideoCall(false);
+  };
+
+  const handleCallEnded = () => {
+    toast("Call ended");
+    if (peer) {
+      peer.destroy();
+    }
+    setPeer(null);
+    setShowVideoCall(false);
+  };
+
+  const handleIceCandidate = ({ candidate }) => {
+    if (peer) {
+      peer.signal(candidate);
+    }
+  };
+
+  const handleCallSignal = ({ signal }) => {
+    if (peer) {
+      peer.signal(signal);
+    }
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   const formatMessageDate = (date) => {
     if (!date) return "";
@@ -382,9 +599,45 @@ const MessagesPage = () => {
                   </p>
                 </div>
               </div>
-              <button className="p-2 hover:bg-neutral-100 rounded-lg">
-                <EllipsisVerticalIcon className="w-5 h-5 text-neutral-600" />
-              </button>
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 hover:bg-neutral-100 rounded-lg"
+                >
+                  <EllipsisVerticalIcon className="w-5 h-5 text-neutral-600" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 py-2 z-10">
+                    <button
+                      onClick={handleScheduleSession}
+                      className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center space-x-3"
+                    >
+                      <CalendarIcon className="w-5 h-5 text-neutral-500" />
+                      <span>Schedule Session</span>
+                    </button>
+                    <button
+                      onClick={handleInstantMeeting}
+                      className="w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 flex items-center space-x-3"
+                    >
+                      <VideoCameraIcon className="w-5 h-5 text-neutral-500" />
+                      <span>Instant Meeting</span>
+                    </button>
+                    <hr className="my-2 border-neutral-200" />
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        setShowDeleteConfirm(true);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-3"
+                    >
+                      <TrashIcon className="w-5 h-5 text-red-500" />
+                      <span>Delete Conversation</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Messages */}
@@ -478,6 +731,84 @@ const MessagesPage = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <h3 className="text-lg font-bold text-neutral-900 mb-4">
+              Delete Conversation?
+            </h3>
+            <p className="text-neutral-600 mb-6">
+              Are you sure you want to delete this conversation with{" "}
+              {selectedUser?.profile?.name || selectedUser?.username}? This
+              action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConversation}
+                className="btn bg-red-500 hover:bg-red-600 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Session Modal */}
+      <ScheduleSessionModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        recipientId={selectedUserId}
+        recipientName={selectedUser?.profile?.name || selectedUser?.username}
+      />
+
+      {/* Video Call Modal */}
+      <VideoCallModal
+        isOpen={showVideoCall}
+        onClose={() => {
+          setShowVideoCall(false);
+          if (peer) {
+            peer.destroy();
+            setPeer(null);
+          }
+        }}
+        peer={peer}
+        remoteUserId={selectedUserId}
+        remoteUserName={selectedUser?.profile?.name || selectedUser?.username}
+        isInitiator={true}
+      />
+
+      {/* Incoming Call Notification */}
+      {incomingCall && (
+        <div className="fixed top-20 right-4 z-50 bg-white rounded-lg shadow-xl border border-neutral-200 p-6 w-80">
+          <div className="flex items-center space-x-3 mb-4">
+            <VideoCameraIcon className="w-8 h-8 text-primary-500 animate-pulse" />
+            <div>
+              <h4 className="font-bold text-neutral-900">Incoming Call</h4>
+              <p className="text-sm text-neutral-600">{incomingCall.name}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={rejectCall}
+              className="flex-1 btn bg-red-500 hover:bg-red-600 text-white"
+            >
+              Decline
+            </button>
+            <button onClick={acceptCall} className="flex-1 btn btn-primary">
+              Accept
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

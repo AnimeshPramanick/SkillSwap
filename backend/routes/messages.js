@@ -605,4 +605,42 @@ router.get(
   }
 );
 
+// Delete conversation
+router.delete("/conversation/:userId", verifyToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const currentUserId = req.user.id;
+
+    // Get conversation ID
+    const participants = [currentUserId, userId].sort().join("_");
+
+    // In a real implementation, you would delete all messages in this conversation
+    // For Firebase, you would query and delete messages where participants match
+    const admin = require("firebase-admin");
+    const db = admin.firestore();
+
+    const messagesRef = db.collection("messages");
+    const snapshot = await messagesRef
+      .where("participants", "==", participants)
+      .get();
+
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    res.json({
+      message: "Conversation deleted successfully",
+      deletedCount: snapshot.size,
+    });
+  } catch (error) {
+    console.error("Delete conversation error:", error);
+    res.status(500).json({
+      error: "Failed to delete conversation",
+    });
+  }
+});
+
 module.exports = router;
