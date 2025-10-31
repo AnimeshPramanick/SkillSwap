@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRightIcon,
   UserGroupIcon,
@@ -7,70 +7,77 @@ import {
   VideoCameraIcon,
   StarIcon,
   CheckCircleIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
 const LandingPage = () => {
   const features = [
     {
       icon: UserGroupIcon,
-      title: 'Smart Matching',
-      description: 'Our algorithm finds people who want to learn what you know and teach what you want to learn.',
+      title: "Smart Matching",
+      description:
+        "Our algorithm finds people who want to learn what you know and teach what you want to learn.",
     },
     {
       icon: ChatBubbleLeftRightIcon,
-      title: 'Real-time Chat',
-      description: 'Connect instantly with potential matches through our secure messaging system.',
+      title: "Real-time Chat",
+      description:
+        "Connect instantly with potential matches through our secure messaging system.",
     },
     {
       icon: VideoCameraIcon,
-      title: 'Video Sessions',
-      description: 'Schedule and conduct learning sessions via video calls with built-in scheduling tools.',
+      title: "Video Sessions",
+      description:
+        "Schedule and conduct learning sessions via video calls with built-in scheduling tools.",
     },
     {
       icon: StarIcon,
-      title: 'Quality Assurance',
-      description: 'Rate and review your learning experiences to build trust within the community.',
+      title: "Quality Assurance",
+      description:
+        "Rate and review your learning experiences to build trust within the community.",
     },
   ];
 
   const benefits = [
-    'Learn new skills for free',
-    'Teach what you know',
-    'Flexible scheduling',
-    'Verified user profiles',
-    'Global community',
-    'Secure platform',
+    "Learn new skills for free",
+    "Teach what you know",
+    "Flexible scheduling",
+    "Verified user profiles",
+    "Global community",
+    "Secure platform",
   ];
 
   const testimonials = [
     {
-      name: 'Sarah Johnson',
-      role: 'Web Developer',
-      content: 'I learned React from someone in exchange for teaching Python. It was an amazing experience!',
-      avatar: '/avatars/sarah.jpg',
+      name: "Sarah Johnson",
+      role: "Web Developer",
+      content:
+        "I learned React from someone in exchange for teaching Python. It was an amazing experience!",
+      avatar: "/avatars/sarah.jpg",
       rating: 5,
     },
     {
-      name: 'Mike Chen',
-      role: 'Designer',
-      content: 'SkillSwap connected me with a UX designer who taught me design principles in return for marketing advice.',
-      avatar: '/avatars/mike.jpg',
+      name: "Mike Chen",
+      role: "Designer",
+      content:
+        "SkillSwap connected me with a UX designer who taught me design principles in return for marketing advice.",
+      avatar: "/avatars/mike.jpg",
       rating: 5,
     },
     {
-      name: 'Emma Davis',
-      role: 'Photographer',
-      content: 'I improved my photography skills while helping someone with their social media strategy. Win-win!',
-      avatar: '/avatars/emma.jpg',
+      name: "Emma Davis",
+      role: "Photographer",
+      content:
+        "I improved my photography skills while helping someone with their social media strategy. Win-win!",
+      avatar: "/avatars/emma.jpg",
       rating: 5,
     },
   ];
 
   const stats = [
-    { number: '10K+', label: 'Active Users' },
-    { number: '50K+', label: 'Skills Exchanged' },
-    { number: '25K+', label: 'Completed Sessions' },
-    { number: '4.9/5', label: 'User Rating' },
+    { number: "10K+", label: "Active Users" },
+    { number: "50K+", label: "Skills Exchanged" },
+    { number: "25K+", label: "Completed Sessions" },
+    { number: "4.9/5", label: "User Rating" },
   ];
 
   return (
@@ -80,10 +87,14 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SS</span>
-              </div>
-              <span className="text-xl font-bold text-neutral-900">SkillSwap</span>
+              <img
+                src="/logo.png"
+                alt="SkillSwap Logo"
+                className="w-10 h-10 object-cover rounded-full"
+              />
+              <span className="text-xl font-bold text-neutral-900">
+                SkillSwap
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -92,10 +103,7 @@ const LandingPage = () => {
               >
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="btn btn-primary"
-              >
+              <Link to="/register" className="btn btn-primary">
                 Get Started
               </Link>
             </div>
@@ -108,12 +116,13 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-h1 mb-6">
-              Exchange Skills, Build Connections,{' '}
+              Exchange Skills, Build Connections,{" "}
               <span className="text-primary-500">Grow Together</span>
             </h1>
             <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
-              Connect with people who want to learn what you know, and teach what they know. 
-              The smart way to acquire new skills through meaningful exchanges.
+              Connect with people who want to learn what you know, and teach
+              what they know. The smart way to acquire new skills through
+              meaningful exchanges.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
@@ -154,14 +163,13 @@ const LandingPage = () => {
       <section className="section-padding bg-neutral-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-h2 mb-4">
-              Everything You Need to Swap Skills
-            </h2>
+            <h2 className="text-h2 mb-4">Everything You Need to Swap Skills</h2>
             <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-              Our platform provides all the tools you need for successful skill exchanges
+              Our platform provides all the tools you need for successful skill
+              exchanges
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
@@ -184,14 +192,13 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-h2 mb-6">
-                Why Choose SkillSwap?
-              </h2>
+              <h2 className="text-h2 mb-6">Why Choose SkillSwap?</h2>
               <p className="text-xl text-neutral-600 mb-8">
-                We make skill exchange simple, safe, and effective. Join thousands of people 
-                who are already growing their skills through meaningful connections.
+                We make skill exchange simple, safe, and effective. Join
+                thousands of people who are already growing their skills through
+                meaningful connections.
               </p>
-              
+
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-center space-x-3">
@@ -201,7 +208,7 @@ const LandingPage = () => {
                 ))}
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl p-8 shadow-lg">
               <div className="text-center mb-6">
                 <div className="text-3xl font-bold text-primary-500 mb-2">
@@ -211,7 +218,7 @@ const LandingPage = () => {
                   No hidden fees, no subscriptions. Exchange skills freely.
                 </div>
               </div>
-              
+
               <div className="bg-primary-50 rounded-lg p-6">
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
@@ -226,9 +233,7 @@ const LandingPage = () => {
                     <div className="text-2xl font-bold text-primary-700">
                       24/7
                     </div>
-                    <div className="text-sm text-primary-600">
-                      Support
-                    </div>
+                    <div className="text-sm text-primary-600">Support</div>
                   </div>
                 </div>
               </div>
@@ -241,14 +246,12 @@ const LandingPage = () => {
       <section className="section-padding bg-neutral-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-h2 mb-4">
-              What Our Community Says
-            </h2>
+            <h2 className="text-h2 mb-4">What Our Community Says</h2>
             <p className="text-xl text-neutral-600">
               Real stories from people who have transformed their skills
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="card">
@@ -287,12 +290,11 @@ const LandingPage = () => {
       <section className="section-padding">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center bg-gradient-primary rounded-2xl p-12 text-white">
-            <h2 className="text-h2 mb-4">
-              Ready to Start Your Skill Journey?
-            </h2>
+            <h2 className="text-h2 mb-4">Ready to Start Your Skill Journey?</h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join our community of learners and teachers. Start exchanging skills today 
-              and unlock your potential through meaningful connections.
+              Join our community of learners and teachers. Start exchanging
+              skills today and unlock your potential through meaningful
+              connections.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
@@ -321,41 +323,107 @@ const LandingPage = () => {
                 <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">SS</span>
                 </div>
-                <span className="text-xl font-bold text-neutral-900">SkillSwap</span>
+                <span className="text-xl font-bold text-neutral-900">
+                  SkillSwap
+                </span>
               </div>
               <p className="text-neutral-600">
-                The smart way to exchange skills and build meaningful connections.
+                The smart way to exchange skills and build meaningful
+                connections.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Platform</h4>
               <ul className="space-y-2">
-                <li><Link to="/discover" className="text-neutral-600 hover:text-primary-500">Discover</Link></li>
-                <li><Link to="/matches" className="text-neutral-600 hover:text-primary-500">Matches</Link></li>
-                <li><Link to="/sessions" className="text-neutral-600 hover:text-primary-500">Sessions</Link></li>
+                <li>
+                  <Link
+                    to="/discover"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Discover
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/matches"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Matches
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/sessions"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Sessions
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Support</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">Help Center</a></li>
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">Contact Us</a></li>
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">Privacy Policy</a></li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold text-neutral-900 mb-4">Company</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">About</a></li>
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">Blog</a></li>
-                <li><a href="#" className="text-neutral-600 hover:text-primary-500">Careers</a></li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-neutral-600 hover:text-primary-500"
+                  >
+                    Careers
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-neutral-200 mt-8 pt-8 text-center text-neutral-500">
             <p>&copy; 2024 SkillSwap. All rights reserved.</p>
           </div>

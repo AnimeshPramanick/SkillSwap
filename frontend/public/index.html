@@ -2,55 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="%PUBLIC_URL%/logo.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#007AFF" />
     <meta
       name="description"
       content="SkillSwap - Exchange skills, build connections, and grow together through meaningful skill exchanges."
     />
-    <meta name="keywords" content="skill exchange, learning, teaching, education, mentorship, skills, platform" />
+    <meta
+      name="keywords"
+      content="skill exchange, learning, teaching, education, mentorship, skills, platform"
+    />
     <meta name="author" content="MiniMax Agent" />
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="SkillSwap - Skill Exchange Platform" />
-    <meta property="og:description" content="Connect with people who want to learn what you know, and teach what they know." />
+    <meta
+      property="og:description"
+      content="Connect with people who want to learn what you know, and teach what they know."
+    />
     <meta property="og:url" content="%PUBLIC_URL%" />
     <meta property="og:image" content="%PUBLIC_URL%/og-image.jpg" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content="SkillSwap - Skill Exchange Platform" />
-    <meta property="twitter:description" content="Connect with people who want to learn what you know, and teach what they know." />
+    <meta
+      property="twitter:title"
+      content="SkillSwap - Skill Exchange Platform"
+    />
+    <meta
+      property="twitter:description"
+      content="Connect with people who want to learn what you know, and teach what they know."
+    />
     <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.jpg" />
 
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    
+
     <!-- Web App Manifest -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
+
     <!-- Preload Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link 
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    
+
     <!-- Critical CSS for above-the-fold content -->
     <style>
       /* Critical loading styles */
       body {
         margin: 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-          sans-serif;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+          "Helvetica Neue", sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        background-color: #F8F9FA;
-        color: #343A40;
+        background-color: #f8f9fa;
+        color: #343a40;
       }
 
       /* Loading spinner */
@@ -63,29 +76,33 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #F8F9FA;
+        background-color: #f8f9fa;
         z-index: 9999;
       }
 
       .loading-spinner {
         width: 40px;
         height: 40px;
-        border: 3px solid #E9ECEF;
-        border-top: 3px solid #007AFF;
+        border: 3px solid #e9ecef;
+        border-top: 3px solid #007aff;
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
 
       .loading-text {
         margin-top: 16px;
-        color: #6C757D;
+        color: #6c757d;
         font-size: 14px;
         font-weight: 500;
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       /* Hide loading once React app loads */
@@ -100,25 +117,27 @@
         }
       }
     </style>
-    
+
     <title>SkillSwap - Exchange Skills, Build Connections</title>
   </head>
   <body>
     <noscript>
-      <div style="padding: 40px; text-align: center; background: #F8F9FA;">
-        <h1 style="color: #212529; margin-bottom: 20px;">JavaScript Required</h1>
-        <p style="color: #6C757D; margin-bottom: 20px;">
-          SkillSwap requires JavaScript to function properly. Please enable JavaScript in your browser settings.
+      <div style="padding: 40px; text-align: center; background: #f8f9fa">
+        <h1 style="color: #212529; margin-bottom: 20px">JavaScript Required</h1>
+        <p style="color: #6c757d; margin-bottom: 20px">
+          SkillSwap requires JavaScript to function properly. Please enable
+          JavaScript in your browser settings.
         </p>
-        <p style="color: #6C757D; font-size: 14px;">
-          We're working to make our platform accessible to everyone, including those who use assistive technologies or have limited bandwidth.
+        <p style="color: #6c757d; font-size: 14px">
+          We're working to make our platform accessible to everyone, including
+          those who use assistive technologies or have limited bandwidth.
         </p>
       </div>
     </noscript>
-    
+
     <!-- React App Root -->
     <div id="root"></div>
-    
+
     <!-- Loading State -->
     <div class="loading-container">
       <div>
@@ -126,30 +145,31 @@
         <div class="loading-text">Loading SkillSwap...</div>
       </div>
     </div>
-    
+
     <!-- Service Worker Registration -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-              console.log('SW registered: ', registration);
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then(function (registration) {
+              console.log("SW registered: ", registration);
             })
-            .catch(function(registrationError) {
-              console.log('SW registration failed: ', registrationError);
+            .catch(function (registrationError) {
+              console.log("SW registration failed: ", registrationError);
             });
         });
       }
     </script>
-    
+
     <!-- Error Boundary Fallback -->
     <script>
-      window.addEventListener('error', function(e) {
-        console.error('Global error:', e.error);
+      window.addEventListener("error", function (e) {
+        console.error("Global error:", e.error);
       });
 
-      window.addEventListener('unhandledrejection', function(e) {
-        console.error('Unhandled promise rejection:', e.reason);
+      window.addEventListener("unhandledrejection", function (e) {
+        console.error("Unhandled promise rejection:", e.reason);
       });
     </script>
   </body>

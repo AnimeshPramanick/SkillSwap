@@ -83,9 +83,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SS</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="SkillSwap Logo"
+              className="w-10 h-10 object-cover rounded-full"
+            />
             <span className="text-xl font-bold text-neutral-900 hidden sm:block">
               SkillSwap
             </span>
