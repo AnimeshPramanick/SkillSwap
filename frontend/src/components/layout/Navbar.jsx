@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../contexts/SocketContext";
+import { useMessages } from "../../contexts/MessagesContext";
 import {
   HomeIcon,
   MagnifyingGlassIcon,
@@ -19,6 +20,7 @@ import {
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { isConnected, onlineUsers } = useSocket();
+  const { unreadCount } = useMessages();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -93,6 +95,9 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             {navigationItems.map((item) => {
               const IconComponent = item.icon;
+              const isMessages = item.name === "Messages";
+              const hasUnread = isMessages && unreadCount > 0;
+
               return (
                 <Link
                   key={item.name}
@@ -100,11 +105,14 @@ const Navbar = () => {
                   className={`
                     nav-link
                     ${item.current ? "nav-link active" : ""}
-                    flex items-center space-x-2
+                    flex items-center space-x-2 relative
                   `}
                 >
                   <IconComponent className="w-5 h-5" />
                   <span>{item.name}</span>
+                  {hasUnread && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
                 </Link>
               );
             })}

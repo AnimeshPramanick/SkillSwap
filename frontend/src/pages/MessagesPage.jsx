@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../contexts/SocketContext";
+import { useMessages } from "../contexts/MessagesContext";
 import { apiService } from "../services/api";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
@@ -18,6 +19,7 @@ const MessagesPage = () => {
   const { userId: selectedUserId } = useParams();
   const { user } = useAuth();
   const { socket, isConnected } = useSocket();
+  const { refreshUnreadCount } = useMessages();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -98,6 +100,8 @@ const MessagesPage = () => {
       await apiService.messages.markAsRead(userId);
       // Refresh conversations to update unread count
       fetchConversations();
+      // Refresh global unread count for navbar badge
+      refreshUnreadCount();
     } catch (error) {
       console.error("Error fetching messages:", error);
       console.error("Error details:", error.response?.data);
@@ -135,6 +139,8 @@ const MessagesPage = () => {
     }
     // Update conversations list
     fetchConversations();
+    // Refresh global unread count for navbar badge
+    refreshUnreadCount();
   };
 
   const handleTypingStart = ({ userId }) => {
@@ -242,7 +248,7 @@ const MessagesPage = () => {
 
   return (
     <div className="fixed inset-0 pt-16 bg-neutral-50">
-      <div className="h-full flex overflow-hidden">
+      <div className="h-full flex overflow-hidden border-t border-neutral-200">
         {/* Conversations Sidebar */}
         <div className="w-80 bg-white border-r border-neutral-200 flex flex-col">
           {/* Header */}

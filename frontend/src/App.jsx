@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { SocketProvider } from "./contexts/SocketContext.jsx";
+import { MessagesProvider } from "./contexts/MessagesContext.jsx";
 import { useAuth } from "./hooks/useAuth.jsx";
 
 // Layout Components
@@ -247,9 +248,10 @@ function App() {
       <Router>
         <AuthProvider>
           <SocketProvider>
-            <div className="App">
-              <AppRoutes />
-
+            <MessagesProvider>
+              <div className="app">
+                <AppRoutes />
+              </div>
               {/* Toast Notifications */}
               <Toaster
                 position="top-right"
@@ -282,7 +284,7 @@ function App() {
                   },
                 }}
               />
-            </div>
+            </MessagesProvider>
           </SocketProvider>
         </AuthProvider>
       </Router>
