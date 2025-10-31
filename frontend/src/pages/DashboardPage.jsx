@@ -271,7 +271,16 @@ const DashboardPage = () => {
                             </div>
                             <div className="text-sm text-neutral-500">
                               Match created{" "}
-                              {format(new Date(match.createdAt), "MMM d")}
+                              {match.createdAt
+                                ? format(
+                                    new Date(
+                                      match.createdAt.seconds
+                                        ? match.createdAt.seconds * 1000
+                                        : match.createdAt
+                                    ),
+                                    "MMM d"
+                                  )
+                                : "recently"}
                             </div>
                           </div>
                         </div>

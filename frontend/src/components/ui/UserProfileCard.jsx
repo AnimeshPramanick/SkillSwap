@@ -1,28 +1,30 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { StarIcon, ChatBubbleLeftIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
-import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  StarIcon,
+  ChatBubbleLeftIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/solid";
+import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 
-const UserProfileCard = ({ 
-  user, 
+const UserProfileCard = ({
+  user,
   matchScore,
   skillAlignment,
   onSendMessage,
   onRequestVideoCall,
   onCreateMatch,
   isCurrentUser = false,
-  className = ''
+  className = "",
 }) => {
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-    
+
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(
-          <StarIcon key={i} className="w-4 h-4 text-yellow-400" />
-        );
+        stars.push(<StarIcon key={i} className="w-4 h-4 text-yellow-400" />);
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
           <StarIcon key={i} className="w-4 h-4 text-yellow-400 opacity-50" />
@@ -33,7 +35,7 @@ const UserProfileCard = ({
         );
       }
     }
-    
+
     return stars;
   };
 
@@ -59,10 +61,12 @@ const UserProfileCard = ({
   };
 
   return (
-    <div className={`
+    <div
+      className={`
       card card-interactive
       ${className}
-    `}>
+    `}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -77,20 +81,18 @@ const UserProfileCard = ({
             ) : (
               <div className="w-full h-full bg-primary-100 flex items-center justify-center">
                 <span className="text-primary-500 font-semibold text-lg">
-                  {(user.profile?.name || user.username || 'U').charAt(0).toUpperCase()}
+                  {(user.profile?.name || user.username || "U")
+                    .charAt(0)
+                    .toUpperCase()}
                 </span>
               </div>
             )}
-            {user.isOnline && (
-              <div className="status-online" />
-            )}
+            {user.isOnline && <div className="status-online" />}
           </div>
 
           {/* User Info */}
           <div>
-            <h3 className="text-h3">
-              {user.profile?.name || user.username}
-            </h3>
+            <h3 className="text-h3">{user.profile?.name || user.username}</h3>
             <div className="flex items-center space-x-2 mt-1">
               <span className="text-small text-neutral-500">
                 @{user.username}
@@ -160,7 +162,10 @@ const UserProfileCard = ({
             </h4>
             <div className="flex flex-wrap gap-2">
               {user.skills.desired.slice(0, 5).map((skill, index) => (
-                <span key={index} className="skill-tag bg-neutral-100 text-neutral-700">
+                <span
+                  key={index}
+                  className="skill-tag bg-neutral-100 text-neutral-700"
+                >
                   {skill}
                 </span>
               ))}
@@ -187,7 +192,10 @@ const UserProfileCard = ({
               </span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {skillAlignment.theyCanTeachMe.map((skill, index) => (
-                  <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded">
+                  <span
+                    key={index}
+                    className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded"
+                  >
                     {skill}
                   </span>
                 ))}
@@ -201,7 +209,10 @@ const UserProfileCard = ({
               </span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {skillAlignment.theyWantToLearn.map((skill, index) => (
-                  <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded">
+                  <span
+                    key={index}
+                    className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded"
+                  >
                     {skill}
                   </span>
                 ))}
@@ -235,7 +246,9 @@ const UserProfileCard = ({
           </div>
           <div>
             <div className="text-lg font-semibold text-neutral-900">
-              {user.stats.averageRating > 0 ? user.stats.averageRating.toFixed(1) : 'N/A'}
+              {user.stats.averageRating > 0
+                ? user.stats.averageRating.toFixed(1)
+                : "N/A"}
             </div>
             <div className="text-xs text-neutral-500">Rating</div>
           </div>
@@ -244,28 +257,32 @@ const UserProfileCard = ({
 
       {/* Action Buttons */}
       {!isCurrentUser && (
-        <div className="mt-6 flex space-x-3">
-          <button
-            onClick={handleSendMessage}
-            className="flex-1 btn btn-secondary flex items-center justify-center space-x-2"
-          >
-            <ChatBubbleLeftIcon className="w-4 h-4" />
-            <span>Message</span>
-          </button>
-          
-          <button
-            onClick={handleVideoCall}
-            className="flex-1 btn btn-outline flex items-center justify-center space-x-2"
-            disabled={!user.isOnline}
-          >
-            <VideoCameraIcon className="w-4 h-4" />
-            <span>Call</span>
-          </button>
-          
-          {!matchScore && (
+        <div className="mt-6 flex flex-wrap gap-3">
+          {onSendMessage && (
+            <button
+              onClick={handleSendMessage}
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-2"
+            >
+              <ChatBubbleLeftIcon className="w-4 h-4" />
+              <span>Message</span>
+            </button>
+          )}
+
+          {onRequestVideoCall && (
+            <button
+              onClick={handleVideoCall}
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-2"
+              disabled={!user.isOnline}
+            >
+              <VideoCameraIcon className="w-4 h-4" />
+              <span>Call</span>
+            </button>
+          )}
+
+          {onCreateMatch && !matchScore && (
             <button
               onClick={handleCreateMatch}
-              className="flex-1 btn btn-primary"
+              className="flex-1 min-w-full btn btn-primary"
             >
               Match
             </button>

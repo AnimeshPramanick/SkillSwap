@@ -208,7 +208,16 @@ const MatchesPage = () => {
                         <div className="flex items-center text-xs text-neutral-500">
                           <ClockIcon className="w-4 h-4 mr-1" />
                           Matched{" "}
-                          {format(new Date(match.createdAt), "MMM d, yyyy")}
+                          {match.createdAt
+                            ? format(
+                                new Date(
+                                  match.createdAt.seconds
+                                    ? match.createdAt.seconds * 1000
+                                    : match.createdAt
+                                ),
+                                "MMM d, yyyy"
+                              )
+                            : "recently"}
                         </div>
                       </div>
                     </div>

@@ -29,20 +29,51 @@ const DiscoverPage = () => {
   const [availableSkills, setAvailableSkills] = useState([]);
 
   useEffect(() => {
-    fetchUsers();
-    fetchSkillCategories();
-  }, []);
+    if (user) {
+      // Only fetch users after the current user is loaded
+      fetchUsers();
+      fetchSkillCategories();
+    }
+  }, [user?.id]); // Add dependency on user.id to refetch when user loads
 
   useEffect(() => {
     applyFilters();
   }, [searchQuery, filters, users]);
 
   const fetchUsers = async () => {
+    if (!user) {
+      console.log("User not loaded yet, skipping fetch");
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await apiService.users.searchUsers({});
-      setUsers(response.data.users || []);
-      setFilteredUsers(response.data.users || []);
+
+      console.log("=== DEBUG INFO ===");
+      console.log("Current user ID:", user?.id, "Type:", typeof user?.id);
+      console.log("Current username:", user?.username);
+      console.log("All users from API:", response.data.users);
+
+      // Filter out the current user from the list using multiple comparison methods
+      const otherUsers = (response.data.users || []).filter((u) => {
+        // Compare both ID and username to be safe (handle type mismatch)
+        const isSameId = String(u.id) === String(user?.id);
+        const isSameUsername = u.username === user?.username;
+        const shouldFilter = isSameId || isSameUsername;
+
+        if (shouldFilter) {
+          console.log(`Filtering out user: ${u.username} (ID: ${u.id})`);
+        }
+
+        return !shouldFilter;
+      });
+
+      console.log("Filtered users count:", otherUsers.length);
+      console.log("=================");
+
+      setUsers(otherUsers);
+      setFilteredUsers(otherUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Failed to load users");
@@ -101,6 +132,13 @@ const DiscoverPage = () => {
       );
     }
 
+    // Always filter out current user as a final safety check
+    filtered = filtered.filter((u) => {
+      const isSameId = String(u.id) === String(user?.id);
+      const isSameUsername = u.username === user?.username;
+      return !isSameId && !isSameUsername;
+    });
+
     setFilteredUsers(filtered);
   };
 
@@ -108,11 +146,17 @@ const DiscoverPage = () => {
     try {
       setDiscovering(true);
       const response = await apiService.matches.findMatches();
-      if (response.data.suggestions && response.data.suggestions.length > 0) {
-        setFilteredUsers(response.data.suggestions);
-        toast.success(
-          `Found ${response.data.suggestions.length} potential matches!`
-        );
+      console.log("Find matches response:", response.data);
+
+      if (response.data.matches && response.data.matches.length > 0) {
+        // Filter out the current user from suggestions using multiple comparison methods
+        const suggestions = response.data.matches.filter((s) => {
+          const isSameId = String(s.id) === String(user?.id);
+          const isSameUsername = s.username === user?.username;
+          return !isSameId && !isSameUsername;
+        });
+        setFilteredUsers(suggestions);
+        toast.success(`Found ${suggestions.length} potential matches!`);
       } else {
         toast.info("No new matches found at this time");
       }
@@ -126,13 +170,31 @@ const DiscoverPage = () => {
 
   const handleCreateMatch = async (userId) => {
     try {
+      // Check if trying to match with self (compare both as strings)
+      if (String(userId) === String(user?.id) || userId === user?.username) {
+        toast.error("You cannot create a match with yourself");
+        return;
+      }
+
       await apiService.matches.createMatch(userId);
       toast.success("Match created successfully!");
-      // Refresh users list
+      // Refresh users list to remove the matched user
       await fetchUsers();
     } catch (error) {
       console.error("Error creating match:", error);
-      toast.error(error.response?.data?.error || "Failed to create match");
+      const errorMessage =
+        error.response?.data?.error || "Failed to create match";
+
+      // Don't show duplicate error messages
+      if (errorMessage.toLowerCase().includes("yourself")) {
+        toast.error("You cannot match with yourself");
+      } else if (errorMessage.toLowerCase().includes("already exists")) {
+        toast.info("You already have a match with this user");
+      } else if (errorMessage.toLowerCase().includes("compatibility")) {
+        toast.error("No skill compatibility found with this user");
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -181,28 +243,30 @@ const DiscoverPage = () => {
 
         {/* Search and Filter Bar */}
         <div className="mb-6 space-y-4">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 pointer-events-none z-10" />
               <input
                 type="text"
                 placeholder="Search by name, username, or skills..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input pl-10 w-full"
+                className="w-full pl-11 pr-4 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
               />
             </div>
 
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`btn ${showFilters ? "btn-primary" : "btn-outline"}`}
+              className={`btn ${
+                showFilters ? "btn-primary" : "btn-outline"
+              } whitespace-nowrap`}
             >
               <FunnelIcon className="w-5 h-5 mr-2" />
               Filters
               {hasActiveFilters && (
-                <span className="ml-2 px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded-full">
+                <span className="ml-2 px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded-full font-medium">
                   {filters.skills.length +
                     (filters.isOnline ? 1 : 0) +
                     (filters.location ? 1 : 0)}
@@ -214,7 +278,7 @@ const DiscoverPage = () => {
             <button
               onClick={handleFindMatches}
               disabled={discovering}
-              className="btn btn-primary"
+              className="btn btn-primary whitespace-nowrap"
             >
               <SparklesIcon className="w-5 h-5 mr-2" />
               {discovering ? "Finding..." : "Smart Match"}
@@ -326,8 +390,7 @@ const DiscoverPage = () => {
               <UserProfileCard
                 key={discoveredUser.id}
                 user={discoveredUser}
-                onMatch={handleCreateMatch}
-                showMatchButton={true}
+                onCreateMatch={handleCreateMatch}
               />
             ))}
           </div>
