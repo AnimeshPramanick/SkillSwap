@@ -96,6 +96,8 @@ const MessagesPage = () => {
       setMessages(response.data.messages || []);
       // Mark as read
       await apiService.messages.markAsRead(userId);
+      // Refresh conversations to update unread count
+      fetchConversations();
     } catch (error) {
       console.error("Error fetching messages:", error);
       console.error("Error details:", error.response?.data);
@@ -304,17 +306,19 @@ const MessagesPage = () => {
                         <span className="font-semibold text-neutral-900 truncate">
                           {otherUser.profile?.name || otherUser.username}
                         </span>
-                        {conv.lastMessage && (
+                        {conv.lastMessage && conv.lastMessage.timestamp && (
                           <span className="text-xs text-neutral-500">
                             {formatMessageDate(conv.lastMessage.timestamp)}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-neutral-600 truncate">
-                        {conv.lastMessage?.content ||
-                          conv.lastMessage?.message ||
-                          "Start a conversation"}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-neutral-600 truncate flex-1">
+                          {conv.lastMessage?.content ||
+                            conv.lastMessage?.message ||
+                            "Start a conversation"}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Unread Badge */}

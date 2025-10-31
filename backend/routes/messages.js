@@ -220,14 +220,36 @@ router.get(
 router.patch("/conversation/:userId/read", verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
+    const currentUserId = req.user.id;
 
-    // In a real implementation, you would update messages in Firestore
-    // For now, we'll just return success
-    // await updateMessagesReadStatus(req.user.id, userId);
+    // Get Firestore instance
+    const db = require("../config/firebase").getFirestore();
+
+    // Find all unread messages from userId to currentUserId
+    const participantsKey = [currentUserId, userId].sort().join("_");
+
+    const messagesSnapshot = await db
+      .collection("messages")
+      .where("participants", "==", participantsKey)
+      .where("senderId", "==", userId)
+      .where("recipientId", "==", currentUserId)
+      .where("isRead", "==", false)
+      .get();
+
+    console.log(`[DEBUG] Marking ${messagesSnapshot.size} messages as read`);
+
+    // Update all unread messages to read
+    const batch = db.batch();
+    messagesSnapshot.forEach((doc) => {
+      batch.update(doc.ref, { isRead: true });
+    });
+
+    await batch.commit();
 
     res.json({
       message: "Messages marked as read",
       userId,
+      count: messagesSnapshot.size,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -374,6 +396,9 @@ router.get("/conversations", verifyToken, async (req, res) => {
         .get();
 
       conv.unreadCount = unreadSnapshot.size;
+      console.log(
+        `[DEBUG] Conversation ${conv.id}: ${conv.unreadCount} unread messages`
+      );
     }
 
     // Sort by last message timestamp (conversations without messages go to bottom)
