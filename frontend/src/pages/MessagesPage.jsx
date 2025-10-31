@@ -273,10 +273,17 @@ const MessagesPage = () => {
     try {
       console.log("Initiating call to:", selectedUserId);
 
+      // Get media stream FIRST before creating peer
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      console.log("Got media stream before peer creation:", stream);
+
       const newPeer = new SimplePeer({
         initiator: true,
         trickle: false,
-        stream: false, // We'll add stream in VideoCallModal
+        stream: stream, // Pass stream directly
         config: {
           iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
@@ -295,24 +302,37 @@ const MessagesPage = () => {
         });
       });
 
+      newPeer.on("stream", (remoteStream) => {
+        console.log("Initiator received remote stream");
+      });
+
       newPeer.on("error", (err) => {
         console.error("Peer error:", err);
-        toast.error("Call connection failed: " + err.message);
-        setShowVideoCall(false);
-        setPeer(null);
+        // Don't destroy on certain errors that are recoverable
+        if (err.message && err.message.includes("Ice connection failed")) {
+          console.log("ICE connection issue, but keeping peer alive");
+        } else {
+          toast.error("Call connection failed: " + err.message);
+          setShowVideoCall(false);
+          setPeer(null);
+          // Stop tracks
+          stream.getTracks().forEach((track) => track.stop());
+        }
       });
 
       newPeer.on("close", () => {
         console.log("Peer closed");
         setShowVideoCall(false);
         setPeer(null);
+        // Stop tracks
+        stream.getTracks().forEach((track) => track.stop());
       });
 
       setPeer(newPeer);
       setShowVideoCall(true);
     } catch (error) {
       console.error("Error initiating call:", error);
-      toast.error("Failed to initiate call");
+      toast.error("Failed to access camera/microphone");
     }
   };
 
@@ -321,47 +341,68 @@ const MessagesPage = () => {
     setIncomingCall({ from, name, signal });
   };
 
-  const acceptCall = () => {
-    console.log("Accepting call from:", incomingCall.from);
+  const acceptCall = async () => {
+    try {
+      console.log("Accepting call from:", incomingCall.from);
 
-    const newPeer = new SimplePeer({
-      initiator: false,
-      trickle: false,
-      stream: false, // We'll add stream in VideoCallModal
-      config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          { urls: "stun:stun1.l.google.com:19302" },
-        ],
-      },
-    });
-
-    newPeer.on("signal", (data) => {
-      console.log("Sending accept signal");
-      socket.emit("accept_call", {
-        signal: data,
-        to: incomingCall.from,
+      // Get media stream FIRST before creating peer
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
       });
-    });
+      console.log("Got media stream before peer creation:", stream);
 
-    newPeer.on("error", (err) => {
-      console.error("Peer error:", err);
-      toast.error("Call connection failed: " + err.message);
-      setShowVideoCall(false);
-      setPeer(null);
-    });
+      const newPeer = new SimplePeer({
+        initiator: false,
+        trickle: false,
+        stream: stream, // Pass stream directly
+        config: {
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+          ],
+        },
+      });
 
-    newPeer.on("close", () => {
-      console.log("Peer closed");
-      setShowVideoCall(false);
-      setPeer(null);
-    });
+      newPeer.on("signal", (data) => {
+        console.log("Sending accept signal");
+        socket.emit("accept_call", {
+          signal: data,
+          to: incomingCall.from,
+        });
+      });
 
-    console.log("Signaling peer with incoming data");
-    newPeer.signal(incomingCall.signal);
-    setPeer(newPeer);
-    setShowVideoCall(true);
-    setIncomingCall(null);
+      newPeer.on("stream", (remoteStream) => {
+        console.log("Accepter received remote stream");
+      });
+
+      newPeer.on("error", (err) => {
+        console.error("Peer error:", err);
+        toast.error("Call connection failed: " + err.message);
+        setShowVideoCall(false);
+        setPeer(null);
+        // Stop tracks
+        stream.getTracks().forEach((track) => track.stop());
+      });
+
+      newPeer.on("close", () => {
+        console.log("Peer closed");
+        setShowVideoCall(false);
+        setPeer(null);
+        // Stop tracks
+        stream.getTracks().forEach((track) => track.stop());
+      });
+
+      console.log("Signaling peer with incoming data");
+      newPeer.signal(incomingCall.signal);
+      setPeer(newPeer);
+      setShowVideoCall(true);
+      setIncomingCall(null);
+    } catch (error) {
+      console.error("Error accepting call:", error);
+      toast.error("Failed to access camera/microphone");
+      setIncomingCall(null);
+    }
   };
 
   const rejectCall = () => {
@@ -371,15 +412,29 @@ const MessagesPage = () => {
   };
 
   const handleCallAccepted = ({ signal }) => {
-    if (peer) {
-      peer.signal(signal);
+    console.log("Call accepted, signaling peer with response");
+    if (peer && !peer.destroyed) {
+      try {
+        peer.signal(signal);
+        console.log("Successfully signaled peer with accept response");
+      } catch (err) {
+        console.error("Error signaling peer:", err);
+      }
+    } else {
+      console.error("Cannot signal - peer is", peer ? "destroyed" : "null");
     }
   };
 
   const handleCallRejected = () => {
     toast.error("Call was rejected");
     if (peer) {
-      peer.destroy();
+      // Get the stream before destroying peer
+      if (peer.streams && peer.streams.length > 0) {
+        peer.streams[0].getTracks().forEach((track) => track.stop());
+      }
+      if (!peer.destroyed) {
+        peer.destroy();
+      }
     }
     setPeer(null);
     setShowVideoCall(false);
@@ -388,7 +443,13 @@ const MessagesPage = () => {
   const handleCallEnded = () => {
     toast("Call ended");
     if (peer) {
-      peer.destroy();
+      // Get the stream before destroying peer
+      if (peer.streams && peer.streams.length > 0) {
+        peer.streams[0].getTracks().forEach((track) => track.stop());
+      }
+      if (!peer.destroyed) {
+        peer.destroy();
+      }
     }
     setPeer(null);
     setShowVideoCall(false);

@@ -79,22 +79,25 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link
+            to="/dashboard"
+            className="flex items-center space-x-2 flex-shrink-0"
+          >
             <img
               src="/logo.png"
               alt="SkillSwap Logo"
               className="w-10 h-10 object-cover rounded-full"
             />
-            <span className="text-xl font-bold text-neutral-900 hidden sm:block">
+            <span className="text-lg font-bold text-neutral-900 hidden lg:block">
               SkillSwap
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-6 flex-1 justify-center">
             {navigationItems.map((item) => {
               const IconComponent = item.icon;
               const isMessages = item.name === "Messages";
@@ -121,9 +124,9 @@ const Navbar = () => {
           </div>
 
           {/* Right side - User menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
             {/* Connection Status */}
-            <div className="hidden sm:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center space-x-2">
               <div
                 className={`
                   w-2 h-2 rounded-full
@@ -139,7 +142,7 @@ const Navbar = () => {
             </div>
 
             {/* User Avatar */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => navigate("/profile")}
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-neutral-50 transition-colors"
@@ -157,7 +160,7 @@ const Navbar = () => {
                   )}
                   {user?.isOnline && <div className="status-online" />}
                 </div>
-                <span className="hidden sm:block text-sm font-medium text-neutral-700">
+                <span className="hidden lg:block text-sm font-medium text-neutral-700">
                   {user?.profile?.name || user?.username}
                 </span>
               </button>
@@ -166,7 +169,7 @@ const Navbar = () => {
             {/* Settings */}
             <button
               onClick={() => navigate("/settings")}
-              className="p-2 text-neutral-500 hover:text-neutral-700 transition-colors"
+              className="p-2 text-neutral-500 hover:text-neutral-700 transition-colors flex-shrink-0"
               title="Settings"
             >
               <Cog6ToothIcon className="w-5 h-5" />

@@ -38,99 +38,86 @@ const VideoCallModal = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !peer) return;
 
-    const startCall = async () => {
+    const setupVideoCall = async () => {
       try {
-        console.log("Starting call setup...");
+        console.log("Setting up video call display...");
         console.log("Peer object:", peer);
         console.log("Is initiator:", isInitiator);
 
-        // Get user media
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
+        // Get the local stream from the peer
+        if (peer.streams && peer.streams.length > 0) {
+          const stream = peer.streams[0];
+          console.log("Got local stream from peer:", stream);
+          setLocalStream(stream);
 
-        console.log("Got local stream:", stream);
-        console.log("Stream tracks:", stream.getTracks());
-        setLocalStream(stream);
-
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-          console.log("Set local video srcObject");
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = stream;
+            console.log("Set local video srcObject");
+          }
+        } else {
+          console.warn("No local stream found in peer");
         }
 
-        if (peer) {
-          console.log("Adding stream to peer");
-          console.log("Peer destroyed?", peer.destroyed);
+        // Listen for remote stream
+        const handleRemoteStream = (remoteStream) => {
+          console.log("Received remote stream:", remoteStream);
+          console.log("Remote stream tracks:", remoteStream.getTracks());
 
-          // Add stream to peer
-          try {
-            peer.addStream(stream);
-            console.log("Stream added successfully");
-          } catch (err) {
-            console.error("Error adding stream:", err);
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = remoteStream;
+            console.log("Set remote video srcObject");
+
+            // Force video to play
+            remoteVideoRef.current.play().catch((err) => {
+              console.error("Error playing remote video:", err);
+            });
           }
 
-          // Handle remote stream
-          peer.on("stream", (remoteStream) => {
-            console.log("Received remote stream:", remoteStream);
-            console.log("Remote stream tracks:", remoteStream.getTracks());
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = remoteStream;
-              console.log("Set remote video srcObject");
-              // Force video to play
-              remoteVideoRef.current.play().catch((err) => {
-                console.error("Error playing remote video:", err);
-              });
-            }
-            setHasRemoteStream(true);
-            setCallStatus("connected");
-          });
+          setHasRemoteStream(true);
+          setCallStatus("connected");
+        };
 
-          peer.on("error", (err) => {
-            console.error("Peer error:", err);
-            setCallStatus("error");
-          });
-
-          peer.on("close", () => {
-            console.log("Peer connection closed");
-            handleEndCall();
-          });
-
-          peer.on("connect", () => {
-            console.log("Peer connected");
-            // Don't set to connected until we have remote stream
-          });
-        } else {
-          console.error("No peer object provided");
-          setCallStatus("error");
+        // Check if stream already exists (peer might have already emitted it)
+        if (peer._remoteStreams && peer._remoteStreams.length > 0) {
+          console.log("Remote stream already exists");
+          handleRemoteStream(peer._remoteStreams[0]);
         }
+
+        // Listen for future streams
+        peer.on("stream", handleRemoteStream);
+
+        peer.on("error", (err) => {
+          console.error("Peer error:", err);
+          setCallStatus("error");
+        });
+
+        peer.on("close", () => {
+          console.log("Peer connection closed");
+          handleEndCall();
+        });
+
+        peer.on("connect", () => {
+          console.log("Peer connected");
+        });
       } catch (error) {
-        console.error("Error accessing media devices:", error);
-        alert("Could not access camera/microphone. Please check permissions.");
+        console.error("Error setting up video call:", error);
         setCallStatus("error");
       }
     };
 
-    startCall();
+    setupVideoCall();
 
     return () => {
-      // Cleanup
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-      }
+      // Cleanup - but don't stop tracks, MessagesPage will handle that
+      console.log("VideoCallModal cleanup");
     };
   }, [isOpen, peer]);
 
   const handleEndCall = () => {
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
-    }
-    if (peer) {
-      peer.destroy();
-    }
+    // Don't stop tracks here - let MessagesPage handle cleanup
+    // Don't destroy peer here - MessagesPage will handle it
     if (socket) {
       socket.emit("call_ended", { remoteUserId });
     }
@@ -208,7 +195,10 @@ const VideoCallModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+    <div
+      className="fixed inset-0 bg-black flex flex-col"
+      style={{ zIndex: 99999 }}
+    >
       {/* Remote Video (Main) */}
       <div className="flex-1 relative bg-gray-900">
         <video
