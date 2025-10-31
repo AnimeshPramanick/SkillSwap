@@ -137,11 +137,7 @@ const MessagesPage = () => {
         type: "text",
       });
 
-      // Emit via socket for real-time delivery
-      if (socket) {
-        socket.emit("send_message", response.data.message);
-      }
-
+      // Add message to local state
       setMessages((prev) => [...prev, response.data.message]);
       setMessageText("");
 
@@ -181,13 +177,34 @@ const MessagesPage = () => {
   };
 
   const formatMessageDate = (date) => {
-    const messageDate = new Date(date);
-    if (isToday(messageDate)) {
+    if (!date) return "";
+
+    try {
+      const messageDate = new Date(date);
+      if (isNaN(messageDate.getTime())) return "";
+
+      if (isToday(messageDate)) {
+        return format(messageDate, "h:mm a");
+      } else if (isYesterday(messageDate)) {
+        return "Yesterday";
+      } else {
+        return format(messageDate, "MMM d");
+      }
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const formatMessageTime = (date) => {
+    if (!date) return "";
+
+    try {
+      const messageDate = new Date(date);
+      if (isNaN(messageDate.getTime())) return "";
+
       return format(messageDate, "h:mm a");
-    } else if (isYesterday(messageDate)) {
-      return "Yesterday";
-    } else {
-      return format(messageDate, "MMM d");
+    } catch (error) {
+      return "";
     }
   };
 
@@ -265,12 +282,16 @@ const MessagesPage = () => {
                         <span className="font-semibold text-neutral-900 truncate">
                           {otherUser.profile?.name || otherUser.username}
                         </span>
-                        <span className="text-xs text-neutral-500">
-                          {formatMessageDate(conv.lastMessage?.createdAt)}
-                        </span>
+                        {conv.lastMessage && (
+                          <span className="text-xs text-neutral-500">
+                            {formatMessageDate(conv.lastMessage.timestamp)}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-neutral-600 truncate">
-                        {conv.lastMessage?.content || "No messages yet"}
+                        {conv.lastMessage?.content ||
+                          conv.lastMessage?.message ||
+                          "Start a conversation"}
                       </p>
                     </div>
 
@@ -352,13 +373,17 @@ const MessagesPage = () => {
                           : "bg-neutral-200 text-neutral-900"
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm">
+                        {message.content || message.message}
+                      </p>
                       <p
                         className={`text-xs mt-1 ${
                           isOwn ? "text-primary-100" : "text-neutral-500"
                         }`}
                       >
-                        {format(new Date(message.createdAt), "h:mm a")}
+                        {formatMessageTime(
+                          message.timestamp || message.createdAt
+                        )}
                       </p>
                     </div>
                   </div>

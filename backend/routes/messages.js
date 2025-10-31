@@ -74,12 +74,20 @@ router.post(
         lastMessageActivity: new Date().toISOString(),
       });
 
+      const messageResponse = {
+        id: messageId,
+        ...messageData,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Emit socket event to recipient if they're connected
+      const io = req.app.get("io");
+      if (io) {
+        io.to(`user_${recipientId}`).emit("new_message", messageResponse);
+      }
+
       res.status(201).json({
-        message: {
-          id: messageId,
-          ...messageData,
-          timestamp: new Date().toISOString(),
-        },
+        message: messageResponse,
       });
     } catch (error) {
       console.error("Send message error:", error);
@@ -251,6 +259,38 @@ router.get("/conversations", verifyToken, async (req, res) => {
       await processMessage(doc);
     }
 
+    // Also get accepted matches (even without messages)
+    const matchesSnapshot = await db
+      .collection("matches")
+      .where("participants", "array-contains", userId)
+      .where("status", "==", "accepted")
+      .get();
+
+    for (const doc of matchesSnapshot.docs) {
+      const match = doc.data();
+      const otherUserId = match.participants.find((id) => id !== userId);
+
+      if (otherUserId && !conversationMap.has(otherUserId)) {
+        // Get the other user's details
+        const otherUser = await getUser(otherUserId);
+
+        if (otherUser && otherUser.isActive) {
+          conversationMap.set(otherUserId, {
+            id: otherUserId,
+            participant: {
+              id: otherUser.id,
+              username: otherUser.username,
+              profile: otherUser.profile,
+              isOnline: otherUser.isOnline,
+              lastSeen: otherUser.lastSeen,
+            },
+            lastMessage: null, // No messages yet
+            unreadCount: 0,
+          });
+        }
+      }
+    }
+
     // Calculate unread count for each conversation
     const conversations = Array.from(conversationMap.values());
 
@@ -265,10 +305,10 @@ router.get("/conversations", verifyToken, async (req, res) => {
       conv.unreadCount = unreadSnapshot.size;
     }
 
-    // Sort by last message timestamp
+    // Sort by last message timestamp (conversations without messages go to bottom)
     conversations.sort((a, b) => {
-      const timeA = a.lastMessage.timestamp?.toDate?.() || new Date(0);
-      const timeB = b.lastMessage.timestamp?.toDate?.() || new Date(0);
+      const timeA = a.lastMessage?.timestamp?.toDate?.() || new Date(0);
+      const timeB = b.lastMessage?.timestamp?.toDate?.() || new Date(0);
       return timeB - timeA;
     });
 
