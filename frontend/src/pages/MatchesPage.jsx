@@ -161,193 +161,200 @@ const MatchesPage = () => {
 
         {/* Matches List */}
         {filteredMatches.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMatches.map((match) => {
               const otherUser = match.otherParticipant || {};
               const matchedSkills = match.matchedSkills || [];
               const isPending = match.status === "pending";
-              const isRecipient = match.recipientId === user?.uid;
-              const isSender = match.createdBy === user?.uid;
+
+              // Check both uid and id for compatibility
+              const currentUserId = user?.uid || user?.id;
+              const isRecipient = match.recipientId === currentUserId;
+              const isSender = match.createdBy === currentUserId;
+
+              // Debug logging
+              console.log("Match Debug:", {
+                matchId: match.id,
+                status: match.status,
+                isPending,
+                recipientId: match.recipientId,
+                createdBy: match.createdBy,
+                currentUserId,
+                isRecipient,
+                isSender,
+              });
 
               return (
                 <div
                   key={match.id}
-                  className="card hover:shadow-lg transition-shadow"
+                  className="card hover:shadow-lg transition-shadow flex flex-col"
                 >
-                  <div className="flex items-start justify-between">
-                    {/* User Info - Make it clickable to view profile */}
-                    <div
-                      className="flex items-start space-x-4 flex-1 cursor-pointer"
-                      onClick={() => handleViewProfile(otherUser.id)}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      {/* Avatar */}
-                      <div className="avatar avatar-lg">
-                        {otherUser.profile?.avatar ? (
-                          <img
-                            src={otherUser.profile.avatar}
-                            alt={otherUser.profile?.name || otherUser.username}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-primary-100 flex items-center justify-center">
-                            <span className="text-primary-500 font-semibold text-lg">
-                              {(
-                                otherUser.profile?.name ||
-                                otherUser.username ||
-                                "U"
-                              )
-                                .charAt(0)
-                                .toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        {otherUser.isOnline && (
-                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                        )}
-                      </div>
-
-                      {/* Details */}
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="text-lg font-semibold text-neutral-900">
-                            {otherUser.profile?.name ||
+                  {/* User Info - Make it clickable to view profile */}
+                  <div
+                    className="flex flex-col items-center text-center cursor-pointer"
+                    onClick={() => handleViewProfile(otherUser.id)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {/* Avatar */}
+                    <div className="avatar avatar-lg mb-2 relative">
+                      {otherUser.profile?.avatar ? (
+                        <img
+                          src={otherUser.profile.avatar}
+                          alt={otherUser.profile?.name || otherUser.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+                          <span className="text-primary-500 font-semibold text-xl">
+                            {(
+                              otherUser.profile?.name ||
                               otherUser.username ||
-                              "Unknown User"}
-                          </h3>
-                          {isPending && isRecipient && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              New Match Request
-                            </span>
-                          )}
-                          {isPending && isSender && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              Waiting for Response
-                            </span>
-                          )}
-                          {match.status === "accepted" && (
-                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Connected
-                            </span>
-                          )}
+                              "U"
+                            )
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
                         </div>
+                      )}
+                      {otherUser.isOnline && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
+                    </div>
 
-                        {otherUser.profile?.bio && (
-                          <p className="text-sm text-neutral-600 mb-2 line-clamp-2">
-                            {otherUser.profile.bio}
-                          </p>
-                        )}
+                    {/* Name */}
+                    <h3 className="text-base font-semibold text-neutral-900 mb-1">
+                      {otherUser.profile?.name ||
+                        otherUser.username ||
+                        "Unknown User"}
+                    </h3>
 
-                        {/* Matched Skills */}
-                        {matchedSkills.length > 0 && (
-                          <div className="mb-3">
-                            <p className="text-xs text-neutral-500 mb-1">
-                              Matched Skills:
-                            </p>
-                            <div className="flex flex-wrap gap-1">
-                              {matchedSkills.slice(0, 5).map((skill, idx) => (
-                                <span key={idx} className="skill-tag text-xs">
-                                  {skill}
-                                </span>
-                              ))}
-                              {matchedSkills.length > 5 && (
-                                <span className="text-xs text-neutral-500">
-                                  +{matchedSkills.length - 5} more
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                    {/* Status Badge */}
+                    {isPending && isRecipient && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mb-2">
+                        New Match Request
+                      </span>
+                    )}
+                    {isPending && isSender && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                        Waiting for Response
+                      </span>
+                    )}
+                    {match.status === "accepted" && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-2">
+                        Connected
+                      </span>
+                    )}
 
-                        {/* Match Date */}
-                        <div className="flex items-center text-xs text-neutral-500">
-                          <ClockIcon className="w-4 h-4 mr-1" />
-                          Matched{" "}
-                          {(() => {
-                            try {
-                              if (!match.createdAt) return "recently";
+                    {/* Bio - Optional, can be hidden if too long */}
+                    {otherUser.profile?.bio && (
+                      <p className="text-xs text-neutral-600 mb-2 line-clamp-1 px-2">
+                        {otherUser.profile.bio}
+                      </p>
+                    )}
 
-                              const date = match.createdAt.seconds
-                                ? new Date(match.createdAt.seconds * 1000)
-                                : new Date(match.createdAt);
-
-                              // Check if date is valid
-                              if (isNaN(date.getTime())) return "recently";
-
-                              return format(date, "MMM d, yyyy");
-                            } catch (error) {
-                              console.error("Error formatting date:", error);
-                              return "recently";
-                            }
-                          })()}
+                    {/* Matched Skills */}
+                    {matchedSkills.length > 0 && (
+                      <div className="mb-2 w-full px-2">
+                        <p className="text-xs text-neutral-500 mb-1">
+                          Matched Skills:
+                        </p>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {matchedSkills.slice(0, 3).map((skill, idx) => (
+                            <span key={idx} className="skill-tag text-xs">
+                              {skill}
+                            </span>
+                          ))}
+                          {matchedSkills.length > 3 && (
+                            <span className="text-xs text-neutral-500">
+                              +{matchedSkills.length - 3}
+                            </span>
+                          )}
                         </div>
                       </div>
+                    )}
+
+                    {/* Match Date */}
+                    <div className="flex items-center text-xs text-neutral-500 mt-2">
+                      <ClockIcon className="w-4 h-4 mr-1" />
+                      {(() => {
+                        try {
+                          if (!match.createdAt) return "Recently";
+
+                          const date = match.createdAt.seconds
+                            ? new Date(match.createdAt.seconds * 1000)
+                            : new Date(match.createdAt);
+
+                          if (isNaN(date.getTime())) return "Recently";
+
+                          return format(date, "MMM d");
+                        } catch (error) {
+                          return "Recently";
+                        }
+                      })()}
                     </div>
+                  </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-col space-y-2 ml-4">
-                      {/* Show Accept/Reject only if user is the recipient and match is pending */}
-                      {isPending && isRecipient && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateMatchStatus(match.id, "accepted");
-                            }}
-                            className="btn btn-primary btn-sm"
-                          >
-                            <CheckIcon className="w-4 h-4 mr-1" />
-                            Accept
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateMatchStatus(match.id, "rejected");
-                            }}
-                            className="btn btn-outline btn-sm"
-                          >
-                            <XMarkIcon className="w-4 h-4 mr-1" />
-                            Decline
-                          </button>
-                        </>
-                      )}
+                  {/* Actions */}
+                  <div className="mt-3 pt-3 border-t border-neutral-200">
+                    {/* Show Accept/Reject only if user is the recipient and match is pending */}
+                    {isPending && isRecipient && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateMatchStatus(match.id, "accepted");
+                          }}
+                          className="btn btn-primary btn-sm flex-1"
+                        >
+                          <CheckIcon className="w-4 h-4 mr-1" />
+                          Accept
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateMatchStatus(match.id, "rejected");
+                          }}
+                          className="btn btn-outline btn-sm flex-1"
+                        >
+                          <XMarkIcon className="w-4 h-4 mr-1" />
+                          Decline
+                        </button>
+                      </div>
+                    )}
 
-                      {/* Show messaging options for accepted matches */}
-                      {match.status === "accepted" && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMessageUser(otherUser.id);
-                            }}
-                            className="btn btn-primary btn-sm"
-                          >
-                            <ChatBubbleLeftRightIcon className="w-4 h-4 mr-1" />
-                            Message
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleScheduleSession(match.id);
-                            }}
-                            className="btn btn-outline btn-sm"
-                          >
-                            <CalendarIcon className="w-4 h-4 mr-1" />
-                            Schedule
-                          </button>
-                        </>
-                      )}
+                    {/* Show messaging options for accepted matches */}
+                    {match.status === "accepted" && (
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMessageUser(otherUser.id);
+                          }}
+                          className="btn btn-primary btn-sm w-full"
+                        >
+                          <ChatBubbleLeftRightIcon className="w-4 h-4 mr-1" />
+                          Message
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleScheduleSession(match.id);
+                          }}
+                          className="btn btn-outline btn-sm w-full"
+                        >
+                          <CalendarIcon className="w-4 h-4 mr-1" />
+                          Schedule
+                        </button>
+                      </div>
+                    )}
 
-                      {/* Show waiting status for sender with pending match */}
-                      {isPending && isSender && (
-                        <div className="text-xs text-neutral-500 text-center px-2">
-                          Waiting for
-                          <br />
-                          their response
-                        </div>
-                      )}
-                    </div>
+                    {/* Show waiting status for sender with pending match */}
+                    {isPending && isSender && (
+                      <div className="text-xs text-neutral-500 text-center py-2">
+                        Waiting for their response
+                      </div>
+                    )}
                   </div>
                 </div>
               );
