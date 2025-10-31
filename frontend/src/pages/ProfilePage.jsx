@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { apiService, convertToBase64 } from "../services/api";
 import { toast } from "react-hot-toast";
@@ -14,13 +14,18 @@ import {
   ClockIcon,
   StarIcon,
   CalendarIcon,
+  ArrowLeftIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 
 const ProfilePage = () => {
+  const { userId } = useParams(); // Get userId from URL params
+  const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [viewedUser, setViewedUser] = useState(null); // For viewing other users
   const [profileData, setProfileData] = useState({
     name: "",
     bio: "",
@@ -34,8 +39,14 @@ const ProfilePage = () => {
   const [imageForCrop, setImageForCrop] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
 
+  const isOwnProfile = !userId || userId === user?.uid;
+
   useEffect(() => {
-    if (user) {
+    if (userId && userId !== user?.uid) {
+      // Fetch other user's profile
+      fetchUserProfile(userId);
+    } else if (user) {
+      // Show own profile
       setProfileData({
         name: user.profile?.name || "",
         bio: user.profile?.bio || "",
@@ -45,7 +56,29 @@ const ProfilePage = () => {
       setTeachableSkills(user.skills?.teachable || []);
       setDesiredSkills(user.skills?.desired || []);
     }
-  }, [user]);
+  }, [user, userId]);
+
+  const fetchUserProfile = async (targetUserId) => {
+    try {
+      setLoading(true);
+      const response = await apiService.users.getProfile(targetUserId);
+      const userData = response.data.user;
+      setViewedUser(userData);
+      setProfileData({
+        name: userData.profile?.name || userData.username || "",
+        bio: userData.profile?.bio || "",
+        location: userData.profile?.location || "",
+        timezone: userData.profile?.timezone || "UTC",
+      });
+      setTeachableSkills(userData.skills?.teachable || []);
+      setDesiredSkills(userData.skills?.desired || []);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      toast.error("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
@@ -194,7 +227,7 @@ const ProfilePage = () => {
     "Australia/Sydney",
   ];
 
-  if (!user) {
+  if (!user || (userId && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="xl" />
@@ -202,15 +235,33 @@ const ProfilePage = () => {
     );
   }
 
+  const displayUser = viewedUser || user;
+  const displayAvatar = displayUser.profile?.avatar;
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-h1 mb-2">My Profile</h1>
+            {!isOwnProfile && (
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center text-primary-600 hover:text-primary-700 mb-4"
+              >
+                <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                Back
+              </button>
+            )}
+            <h1 className="text-h1 mb-2">
+              {isOwnProfile
+                ? "My Profile"
+                : `${profileData.name || displayUser.username}'s Profile`}
+            </h1>
             <p className="text-neutral-600">
-              Manage your profile information and skills
+              {isOwnProfile
+                ? "Manage your profile information and skills"
+                : "View profile and connect"}
             </p>
           </div>
 
@@ -221,10 +272,10 @@ const ProfilePage = () => {
               <div className="card text-center">
                 <div className="relative inline-block mb-4">
                   <div className="avatar avatar-2xl">
-                    {user.profile?.avatar ? (
+                    {displayAvatar ? (
                       <img
-                        src={user.profile.avatar}
-                        alt={user.profile.name}
+                        src={displayAvatar}
+                        alt={profileData.name || displayUser.username}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -232,47 +283,65 @@ const ProfilePage = () => {
                         <UserIcon className="w-16 h-16 text-primary-500" />
                       </div>
                     )}
+                    {displayUser.isOnline && (
+                      <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                    )}
                   </div>
 
-                  {/* Upload Button */}
-                  <label
-                    htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full cursor-pointer hover:bg-primary-600 transition-colors"
-                  >
-                    {uploading ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <CameraIcon className="w-4 h-4" />
-                    )}
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      className="hidden"
-                      disabled={uploading}
-                    />
-                  </label>
+                  {/* Upload Button - Only show for own profile */}
+                  {isOwnProfile && (
+                    <label
+                      htmlFor="avatar-upload"
+                      className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full cursor-pointer hover:bg-primary-600 transition-colors"
+                    >
+                      {uploading ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <CameraIcon className="w-4 h-4" />
+                      )}
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                  )}
                 </div>
 
                 <h2 className="text-xl font-bold text-neutral-900 mb-1">
-                  {user.profile?.name || user.username}
+                  {profileData.name || displayUser.username}
                 </h2>
                 <p className="text-sm text-neutral-500 mb-4">
-                  @{user.username}
+                  @{displayUser.username}
                 </p>
 
-                {user.profile?.location && (
+                {profileData.location && (
                   <div className="flex items-center justify-center text-sm text-neutral-600 mb-2">
                     <MapPinIcon className="w-4 h-4 mr-1" />
-                    {user.profile.location}
+                    {profileData.location}
                   </div>
                 )}
 
-                {user.profile?.timezone && (
-                  <div className="flex items-center justify-center text-sm text-neutral-600">
+                {profileData.timezone && (
+                  <div className="flex items-center justify-center text-sm text-neutral-600 mb-2">
                     <ClockIcon className="w-4 h-4 mr-1" />
-                    {user.profile.timezone}
+                    {profileData.timezone}
+                  </div>
+                )}
+
+                {/* Action buttons for other user's profile */}
+                {!isOwnProfile && (
+                  <div className="mt-4 space-y-2">
+                    <button
+                      onClick={() => navigate(`/messages/${userId}`)}
+                      className="btn btn-primary w-full"
+                    >
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 mr-2" />
+                      Send Message
+                    </button>
                   </div>
                 )}
               </div>
@@ -287,7 +356,7 @@ const ProfilePage = () => {
                       <span className="text-sm">Total Sessions</span>
                     </div>
                     <span className="font-semibold text-neutral-900">
-                      {user.stats?.totalSessions || 0}
+                      {displayUser.stats?.totalSessions || 0}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -296,7 +365,7 @@ const ProfilePage = () => {
                       <span className="text-sm">Total Hours</span>
                     </div>
                     <span className="font-semibold text-neutral-900">
-                      {user.stats?.totalHours || 0}
+                      {displayUser.stats?.totalHours || 0}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -320,7 +389,7 @@ const ProfilePage = () => {
               <div className="card">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-h3">Basic Information</h3>
-                  {!editing && (
+                  {!editing && isOwnProfile && (
                     <button
                       onClick={() => setEditing(true)}
                       className="btn btn-outline btn-sm"
@@ -330,7 +399,7 @@ const ProfilePage = () => {
                   )}
                 </div>
 
-                {editing ? (
+                {editing && isOwnProfile ? (
                   <form onSubmit={handleProfileUpdate} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -479,27 +548,29 @@ const ProfilePage = () => {
               <div className="card">
                 <h3 className="text-h3 mb-4">Skills I Can Teach</h3>
 
-                {/* Add Skill Form */}
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={skillType === "teachable" ? newSkill : ""}
-                    onChange={(e) => {
-                      setNewSkill(e.target.value);
-                      setSkillType("teachable");
-                    }}
-                    onFocus={() => setSkillType("teachable")}
-                    className="input flex-1"
-                    placeholder="Add a skill you can teach..."
-                  />
-                  <button
-                    onClick={handleAddSkill}
-                    disabled={!newSkill.trim() || skillType !== "teachable"}
-                    className="btn btn-primary"
-                  >
-                    <PlusIcon className="w-5 h-5" />
-                  </button>
-                </div>
+                {/* Add Skill Form - Only for own profile */}
+                {isOwnProfile && (
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={skillType === "teachable" ? newSkill : ""}
+                      onChange={(e) => {
+                        setNewSkill(e.target.value);
+                        setSkillType("teachable");
+                      }}
+                      onFocus={() => setSkillType("teachable")}
+                      className="input flex-1"
+                      placeholder="Add a skill you can teach..."
+                    />
+                    <button
+                      onClick={handleAddSkill}
+                      disabled={!newSkill.trim() || skillType !== "teachable"}
+                      className="btn btn-primary"
+                    >
+                      <PlusIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Skills List */}
                 <div className="flex flex-wrap gap-2">
@@ -510,12 +581,16 @@ const ProfilePage = () => {
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-700"
                       >
                         {skill}
-                        <button
-                          onClick={() => handleRemoveSkill(skill, "teachable")}
-                          className="ml-2 hover:text-primary-900"
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
+                        {isOwnProfile && (
+                          <button
+                            onClick={() =>
+                              handleRemoveSkill(skill, "teachable")
+                            }
+                            className="ml-2 hover:text-primary-900"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </span>
                     ))
                   ) : (
@@ -530,27 +605,29 @@ const ProfilePage = () => {
               <div className="card">
                 <h3 className="text-h3 mb-4">Skills I Want to Learn</h3>
 
-                {/* Add Skill Form */}
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={skillType === "desired" ? newSkill : ""}
-                    onChange={(e) => {
-                      setNewSkill(e.target.value);
-                      setSkillType("desired");
-                    }}
-                    onFocus={() => setSkillType("desired")}
-                    className="input flex-1"
-                    placeholder="Add a skill you want to learn..."
-                  />
-                  <button
-                    onClick={handleAddSkill}
-                    disabled={!newSkill.trim() || skillType !== "desired"}
-                    className="btn btn-primary"
-                  >
-                    <PlusIcon className="w-5 h-5" />
-                  </button>
-                </div>
+                {/* Add Skill Form - Only for own profile */}
+                {isOwnProfile && (
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      type="text"
+                      value={skillType === "desired" ? newSkill : ""}
+                      onChange={(e) => {
+                        setNewSkill(e.target.value);
+                        setSkillType("desired");
+                      }}
+                      onFocus={() => setSkillType("desired")}
+                      className="input flex-1"
+                      placeholder="Add a skill you want to learn..."
+                    />
+                    <button
+                      onClick={handleAddSkill}
+                      disabled={!newSkill.trim() || skillType !== "desired"}
+                      className="btn btn-primary"
+                    >
+                      <PlusIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Skills List */}
                 <div className="flex flex-wrap gap-2">
@@ -561,12 +638,14 @@ const ProfilePage = () => {
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-700"
                       >
                         {skill}
-                        <button
-                          onClick={() => handleRemoveSkill(skill, "desired")}
-                          className="ml-2 hover:text-blue-900"
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
+                        {isOwnProfile && (
+                          <button
+                            onClick={() => handleRemoveSkill(skill, "desired")}
+                            className="ml-2 hover:text-blue-900"
+                          >
+                            <XMarkIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </span>
                     ))
                   ) : (

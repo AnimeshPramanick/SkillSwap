@@ -158,7 +158,7 @@ const DiscoverPage = () => {
         setFilteredUsers(suggestions);
         toast.success(`Found ${suggestions.length} potential matches!`);
       } else {
-        toast.info("No new matches found at this time");
+        toast("No new matches found at this time", { icon: "ℹ️" });
       }
     } catch (error) {
       console.error("Error finding matches:", error);
@@ -189,7 +189,7 @@ const DiscoverPage = () => {
       if (errorMessage.toLowerCase().includes("yourself")) {
         toast.error("You cannot match with yourself");
       } else if (errorMessage.toLowerCase().includes("already exists")) {
-        toast.info("You already have a match with this user");
+        toast("You already have a match with this user", { icon: "ℹ️" });
       } else if (errorMessage.toLowerCase().includes("compatibility")) {
         toast.error("No skill compatibility found with this user");
       } else {

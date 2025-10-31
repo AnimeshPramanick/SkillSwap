@@ -152,6 +152,16 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/profile/:userId"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <ProfilePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/discover"
         element={
           <ProtectedRoute>

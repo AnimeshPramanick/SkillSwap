@@ -20,7 +20,7 @@ const MatchesPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [matches, setMatches] = useState([]);
-  const [filter, setFilter] = useState("all"); // all, pending, accepted, rejected
+  const [filter, setFilter] = useState("all"); // all, pending, accepted
   const [selectedMatch, setSelectedMatch] = useState(null);
 
   useEffect(() => {
@@ -31,7 +31,31 @@ const MatchesPage = () => {
     try {
       setLoading(true);
       const response = await apiService.matches.getUserMatches();
-      setMatches(response.data.matches || []);
+
+      // Filter out invalid matches
+      const validMatches = (response.data.matches || []).filter((m) => {
+        // Filter out rejected matches
+        if (m.status === "rejected") return false;
+
+        // Filter out matches where user is matching with themselves
+        const otherParticipant = m.otherParticipant;
+        if (!otherParticipant || !otherParticipant.id) return false;
+
+        // Check if other participant is actually a different user
+        const isSameUser =
+          String(otherParticipant.id) === String(user?.uid) ||
+          String(otherParticipant.id) === String(user?.id) ||
+          otherParticipant.username === user?.username;
+
+        if (isSameUser) {
+          console.warn("Filtering out self-match:", m);
+          return false;
+        }
+
+        return true;
+      });
+
+      setMatches(validMatches);
     } catch (error) {
       console.error("Error fetching matches:", error);
       toast.error("Failed to load matches");
@@ -43,12 +67,22 @@ const MatchesPage = () => {
   const handleUpdateMatchStatus = async (matchId, status) => {
     try {
       await apiService.matches.updateMatchStatus(matchId, status);
-      toast.success(`Match ${status} successfully!`);
+      if (status === "accepted") {
+        toast.success("Match accepted! You can now start messaging.");
+      } else {
+        toast.success("Match declined.");
+      }
       await fetchMatches();
     } catch (error) {
       console.error("Error updating match status:", error);
-      toast.error("Failed to update match status");
+      toast.error(
+        error.response?.data?.error || "Failed to update match status"
+      );
     }
+  };
+
+  const handleViewProfile = (userId) => {
+    navigate(`/profile/${userId}`);
   };
 
   const handleMessageUser = (userId) => {
@@ -68,7 +102,6 @@ const MatchesPage = () => {
     all: matches.length,
     pending: matches.filter((m) => m.status === "pending").length,
     accepted: matches.filter((m) => m.status === "accepted").length,
-    rejected: matches.filter((m) => m.status === "rejected").length,
   };
 
   const getStatusBadge = (status) => {
@@ -102,7 +135,7 @@ const MatchesPage = () => {
         {/* Filter Tabs */}
         <div className="mb-6 flex items-center justify-between">
           <div className="flex space-x-2">
-            {["all", "pending", "accepted", "rejected"].map((filterOption) => (
+            {["all", "pending", "accepted"].map((filterOption) => (
               <button
                 key={filterOption}
                 onClick={() => setFilter(filterOption)}
@@ -132,6 +165,9 @@ const MatchesPage = () => {
             {filteredMatches.map((match) => {
               const otherUser = match.otherParticipant || {};
               const matchedSkills = match.matchedSkills || [];
+              const isPending = match.status === "pending";
+              const isRecipient = match.recipientId === user?.uid;
+              const isSender = match.createdBy === user?.uid;
 
               return (
                 <div
@@ -139,8 +175,13 @@ const MatchesPage = () => {
                   className="card hover:shadow-lg transition-shadow"
                 >
                   <div className="flex items-start justify-between">
-                    {/* User Info */}
-                    <div className="flex items-start space-x-4 flex-1">
+                    {/* User Info - Make it clickable to view profile */}
+                    <div
+                      className="flex items-start space-x-4 flex-1 cursor-pointer"
+                      onClick={() => handleViewProfile(otherUser.id)}
+                      role="button"
+                      tabIndex={0}
+                    >
                       {/* Avatar */}
                       <div className="avatar avatar-lg">
                         {otherUser.profile?.avatar ? (
@@ -156,7 +197,9 @@ const MatchesPage = () => {
                                 otherUser.profile?.name ||
                                 otherUser.username ||
                                 "U"
-                              ).charAt(0)}
+                              )
+                                .charAt(0)
+                                .toUpperCase()}
                             </span>
                           </div>
                         )}
@@ -173,17 +216,25 @@ const MatchesPage = () => {
                               otherUser.username ||
                               "Unknown User"}
                           </h3>
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusBadge(
-                              match.status
-                            )}`}
-                          >
-                            {match.status}
-                          </span>
+                          {isPending && isRecipient && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              New Match Request
+                            </span>
+                          )}
+                          {isPending && isSender && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              Waiting for Response
+                            </span>
+                          )}
+                          {match.status === "accepted" && (
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Connected
+                            </span>
+                          )}
                         </div>
 
                         {otherUser.profile?.bio && (
-                          <p className="text-sm text-neutral-600 mb-2">
+                          <p className="text-sm text-neutral-600 mb-2 line-clamp-2">
                             {otherUser.profile.bio}
                           </p>
                         )}
@@ -195,11 +246,16 @@ const MatchesPage = () => {
                               Matched Skills:
                             </p>
                             <div className="flex flex-wrap gap-1">
-                              {matchedSkills.map((skill, idx) => (
+                              {matchedSkills.slice(0, 5).map((skill, idx) => (
                                 <span key={idx} className="skill-tag text-xs">
                                   {skill}
                                 </span>
                               ))}
+                              {matchedSkills.length > 5 && (
+                                <span className="text-xs text-neutral-500">
+                                  +{matchedSkills.length - 5} more
+                                </span>
+                              )}
                             </div>
                           </div>
                         )}
@@ -208,37 +264,47 @@ const MatchesPage = () => {
                         <div className="flex items-center text-xs text-neutral-500">
                           <ClockIcon className="w-4 h-4 mr-1" />
                           Matched{" "}
-                          {match.createdAt
-                            ? format(
-                                new Date(
-                                  match.createdAt.seconds
-                                    ? match.createdAt.seconds * 1000
-                                    : match.createdAt
-                                ),
-                                "MMM d, yyyy"
-                              )
-                            : "recently"}
+                          {(() => {
+                            try {
+                              if (!match.createdAt) return "recently";
+
+                              const date = match.createdAt.seconds
+                                ? new Date(match.createdAt.seconds * 1000)
+                                : new Date(match.createdAt);
+
+                              // Check if date is valid
+                              if (isNaN(date.getTime())) return "recently";
+
+                              return format(date, "MMM d, yyyy");
+                            } catch (error) {
+                              console.error("Error formatting date:", error);
+                              return "recently";
+                            }
+                          })()}
                         </div>
                       </div>
                     </div>
 
                     {/* Actions */}
                     <div className="flex flex-col space-y-2 ml-4">
-                      {match.status === "pending" && (
+                      {/* Show Accept/Reject only if user is the recipient and match is pending */}
+                      {isPending && isRecipient && (
                         <>
                           <button
-                            onClick={() =>
-                              handleUpdateMatchStatus(match.id, "accepted")
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateMatchStatus(match.id, "accepted");
+                            }}
                             className="btn btn-primary btn-sm"
                           >
                             <CheckIcon className="w-4 h-4 mr-1" />
                             Accept
                           </button>
                           <button
-                            onClick={() =>
-                              handleUpdateMatchStatus(match.id, "rejected")
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateMatchStatus(match.id, "rejected");
+                            }}
                             className="btn btn-outline btn-sm"
                           >
                             <XMarkIcon className="w-4 h-4 mr-1" />
@@ -247,23 +313,39 @@ const MatchesPage = () => {
                         </>
                       )}
 
+                      {/* Show messaging options for accepted matches */}
                       {match.status === "accepted" && (
                         <>
                           <button
-                            onClick={() => handleMessageUser(otherUser.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMessageUser(otherUser.id);
+                            }}
                             className="btn btn-primary btn-sm"
                           >
                             <ChatBubbleLeftRightIcon className="w-4 h-4 mr-1" />
                             Message
                           </button>
                           <button
-                            onClick={() => handleScheduleSession(match.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleScheduleSession(match.id);
+                            }}
                             className="btn btn-outline btn-sm"
                           >
                             <CalendarIcon className="w-4 h-4 mr-1" />
                             Schedule
                           </button>
                         </>
+                      )}
+
+                      {/* Show waiting status for sender with pending match */}
+                      {isPending && isSender && (
+                        <div className="text-xs text-neutral-500 text-center px-2">
+                          Waiting for
+                          <br />
+                          their response
+                        </div>
                       )}
                     </div>
                   </div>

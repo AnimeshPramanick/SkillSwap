@@ -207,7 +207,9 @@ router.post(
       // Create the match
       const matchData = {
         participants: [currentUserId, userId],
-        status: "active",
+        status: "pending", // Match starts as pending until recipient accepts
+        createdBy: currentUserId, // Who sent the match request
+        recipientId: userId, // Who needs to accept/reject
         compatibility: {
           user1DesiredMatches: currentDesired.filter((skill) =>
             targetTeachable.includes(skill)
@@ -221,7 +223,6 @@ router.post(
             targetDesired.filter((skill) => currentTeachable.includes(skill))
               .length,
         },
-        createdBy: currentUserId,
         lastActivity: new Date().toISOString(),
       };
 
@@ -261,39 +262,61 @@ router.post(
 // Get user's matches
 router.get("/", verifyToken, async (req, res) => {
   try {
+    const currentUser = await getUser(req.user.id);
     const matches = await getUserMatches(req.user.id);
+
+    // Filter out any invalid matches where user is matched with themselves
+    const validMatches = matches.filter((match) => {
+      const otherUserId = match.participants.find((id) => id !== req.user.id);
+      return otherUserId && otherUserId !== req.user.id;
+    });
 
     // Enhance matches with participant data
     const enhancedMatches = await Promise.all(
-      matches.map(async (match) => {
+      validMatches.map(async (match) => {
         const otherUserId = match.participants.find((id) => id !== req.user.id);
         const otherUser = await getUser(otherUserId);
 
         if (!otherUser) {
-          return {
-            ...match,
-            otherParticipant: null,
-          };
+          return null; // Return null for invalid matches
         }
+
+        // Calculate matched skills
+        const currentDesired = currentUser.skills?.desired || [];
+        const currentTeachable = currentUser.skills?.teachable || [];
+        const otherDesired = otherUser.skills?.desired || [];
+        const otherTeachable = otherUser.skills?.teachable || [];
+
+        const matchedSkills = [
+          ...currentDesired.filter((skill) => otherTeachable.includes(skill)),
+          ...otherDesired.filter((skill) => currentTeachable.includes(skill)),
+        ];
+
+        // Remove duplicates
+        const uniqueMatchedSkills = [...new Set(matchedSkills)];
 
         return {
           ...match,
           otherParticipant: {
             id: otherUser.id,
-            name: otherUser.profile.name,
+            name: otherUser.profile?.name,
             username: otherUser.username,
-            avatar: otherUser.profile.avatar,
+            profile: otherUser.profile,
             isOnline: otherUser.isOnline,
             lastSeen: otherUser.lastSeen,
             skills: otherUser.skills,
           },
+          matchedSkills: uniqueMatchedSkills,
         };
       })
     );
 
+    // Filter out null matches
+    const finalMatches = enhancedMatches.filter((match) => match !== null);
+
     res.json({
-      matches: enhancedMatches,
-      total: enhancedMatches.length,
+      matches: finalMatches,
+      total: finalMatches.length,
     });
   } catch (error) {
     console.error("Get matches error:", error);
@@ -359,14 +382,14 @@ router.get("/:matchId", verifyToken, async (req, res) => {
   }
 });
 
-// Update match status
+// Update match status (Accept or Reject)
 router.patch(
   "/:matchId/status",
   verifyToken,
   [
     body("status")
-      .isIn(["active", "inactive", "blocked"])
-      .withMessage("Status must be active, inactive, or blocked"),
+      .isIn(["accepted", "rejected"])
+      .withMessage("Status must be accepted or rejected"),
   ],
   async (req, res) => {
     try {
@@ -391,14 +414,33 @@ router.patch(
         });
       }
 
-      // Update match status
+      // Verify user is the recipient (only recipient can accept/reject)
+      if (match.recipientId !== req.user.id) {
+        return res.status(403).json({
+          error: "Only the recipient can accept or reject a match",
+        });
+      }
+
+      // If rejected, delete the match from database
+      if (status === "rejected") {
+        const db = require("../config/firebase").getFirestore();
+        await db.collection("matches").doc(matchId).delete();
+
+        return res.json({
+          message: "Match rejected and removed",
+          matchId,
+        });
+      }
+
+      // If accepted, update status
       await updateMatch(matchId, {
-        status,
+        status: "accepted",
+        acceptedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
       res.json({
-        message: "Match status updated successfully",
+        message: "Match accepted successfully",
         matchId,
         status,
       });

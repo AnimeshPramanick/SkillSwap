@@ -32,6 +32,7 @@ const DashboardPage = () => {
   const [skillSuggestions, setSkillSuggestions] = useState([]);
 
   useEffect(() => {
+    console.log("DashboardPage: Fetching dashboard data...");
     fetchDashboardData();
   }, []);
 
@@ -271,16 +272,19 @@ const DashboardPage = () => {
                             </div>
                             <div className="text-sm text-neutral-500">
                               Match created{" "}
-                              {match.createdAt
-                                ? format(
-                                    new Date(
-                                      match.createdAt.seconds
-                                        ? match.createdAt.seconds * 1000
-                                        : match.createdAt
-                                    ),
-                                    "MMM d"
-                                  )
-                                : "recently"}
+                              {(() => {
+                                try {
+                                  if (!match.createdAt) return "recently";
+                                  const date = match.createdAt.seconds
+                                    ? new Date(match.createdAt.seconds * 1000)
+                                    : new Date(match.createdAt);
+                                  return isNaN(date.getTime())
+                                    ? "recently"
+                                    : format(date, "MMM d");
+                                } catch (e) {
+                                  return "recently";
+                                }
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -336,10 +340,21 @@ const DashboardPage = () => {
                               {session.skill} Session
                             </div>
                             <div className="text-sm text-neutral-500">
-                              {format(
-                                new Date(session.scheduledAt),
-                                "MMM d, yyyy • h:mm a"
-                              )}
+                              {(() => {
+                                try {
+                                  if (!session.scheduledAt) return "Date TBD";
+                                  const date = session.scheduledAt.seconds
+                                    ? new Date(
+                                        session.scheduledAt.seconds * 1000
+                                      )
+                                    : new Date(session.scheduledAt);
+                                  return isNaN(date.getTime())
+                                    ? "Date TBD"
+                                    : format(date, "MMM d, yyyy • h:mm a");
+                                } catch (e) {
+                                  return "Date TBD";
+                                }
+                              })()}
                             </div>
                           </div>
                         </div>
