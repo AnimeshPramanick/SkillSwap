@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../contexts/SocketContext";
@@ -59,32 +59,6 @@ const MessagesPage = () => {
   }, [selectedUserId]);
 
   useEffect(() => {
-    if (socket && isConnected) {
-      socket.on("new_message", handleNewMessage);
-      socket.on("typing_start", handleTypingStart);
-      socket.on("typing_stop", handleTypingStop);
-      socket.on("incoming_call", handleIncomingCall);
-      socket.on("call_accepted", handleCallAccepted);
-      socket.on("call_rejected", handleCallRejected);
-      socket.on("call_ended", handleCallEnded);
-      socket.on("ice_candidate", handleIceCandidate);
-      socket.on("call_signal", handleCallSignal);
-
-      return () => {
-        socket.off("new_message", handleNewMessage);
-        socket.off("typing_start", handleTypingStart);
-        socket.off("typing_stop", handleTypingStop);
-        socket.off("incoming_call", handleIncomingCall);
-        socket.off("call_accepted", handleCallAccepted);
-        socket.off("call_rejected", handleCallRejected);
-        socket.off("call_ended", handleCallEnded);
-        socket.off("ice_candidate", handleIceCandidate);
-        socket.off("call_signal", handleCallSignal);
-      };
-    }
-  }, [socket, isConnected, selectedUserId]);
-
-  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
@@ -143,30 +117,50 @@ const MessagesPage = () => {
     }
   };
 
-  const handleNewMessage = (message) => {
-    console.log("Received new message:", message);
-    console.log("Current user:", user);
-    console.log("Selected user ID:", selectedUserId);
+  const handleNewMessage = useCallback(
+    (message) => {
+      console.log("=== NEW MESSAGE RECEIVED ===");
+      console.log("Message:", message);
+      console.log("Current user ID:", user?.uid || user?.id);
+      console.log("Selected user ID:", selectedUserId);
+      console.log("Message sender:", message.senderId);
+      console.log("Message recipient:", message.recipientId);
 
-    const currentUserId = user?.uid || user?.id;
+      const currentUserId = user?.uid || user?.id;
 
-    if (
-      message.senderId === selectedUserId ||
-      message.recipientId === currentUserId
-    ) {
-      setMessages((prev) => [...prev, message]);
-      // Mark as read if conversation is open
-      if (message.senderId === selectedUserId) {
-        apiService.messages.markAsRead(selectedUserId).catch((err) => {
-          console.error("Error marking as read:", err);
-        });
+      // Check if this message is part of the currently open conversation
+      const isPartOfCurrentConversation =
+        (message.senderId === selectedUserId &&
+          message.recipientId === currentUserId) ||
+        (message.senderId === currentUserId &&
+          message.recipientId === selectedUserId);
+
+      console.log(
+        "Is part of current conversation:",
+        isPartOfCurrentConversation
+      );
+
+      if (isPartOfCurrentConversation) {
+        console.log("Adding message to chat");
+        setMessages((prev) => [...prev, message]);
+
+        // Mark as read if the message is from the selected user and conversation is open
+        if (message.senderId === selectedUserId) {
+          apiService.messages.markAsRead(selectedUserId).catch((err) => {
+            console.error("Error marking as read:", err);
+          });
+        }
+      } else {
+        console.log("Message is for a different conversation");
       }
-    }
-    // Update conversations list
-    fetchConversations();
-    // Refresh global unread count for navbar badge
-    refreshUnreadCount();
-  };
+
+      // Always update conversations list to show new message preview
+      fetchConversations();
+      // Refresh global unread count for navbar badge
+      refreshUnreadCount();
+    },
+    [user, selectedUserId, refreshUnreadCount]
+  );
 
   const handleTypingStart = ({ userId }) => {
     if (userId === selectedUserId) {
@@ -476,6 +470,46 @@ const MessagesPage = () => {
       peer.signal(signal);
     }
   };
+
+  // Set up socket listeners
+  useEffect(() => {
+    if (socket && isConnected) {
+      console.log("=== SETTING UP SOCKET LISTENERS ===");
+      console.log("Socket connected:", isConnected);
+      console.log("Socket ID:", socket.id);
+
+      // Test listener to see if ANY events are coming through
+      socket.onAny((eventName, ...args) => {
+        console.log(`[SOCKET EVENT] ${eventName}:`, args);
+      });
+
+      socket.on("new_message", handleNewMessage);
+      socket.on("typing_start", handleTypingStart);
+      socket.on("typing_stop", handleTypingStop);
+      socket.on("incoming_call", handleIncomingCall);
+      socket.on("call_accepted", handleCallAccepted);
+      socket.on("call_rejected", handleCallRejected);
+      socket.on("call_ended", handleCallEnded);
+      socket.on("ice_candidate", handleIceCandidate);
+      socket.on("call_signal", handleCallSignal);
+
+      console.log("Socket listeners registered");
+
+      return () => {
+        console.log("Cleaning up socket listeners");
+        socket.offAny();
+        socket.off("new_message", handleNewMessage);
+        socket.off("typing_start", handleTypingStart);
+        socket.off("typing_stop", handleTypingStop);
+        socket.off("incoming_call", handleIncomingCall);
+        socket.off("call_accepted", handleCallAccepted);
+        socket.off("call_rejected", handleCallRejected);
+        socket.off("call_ended", handleCallEnded);
+        socket.off("ice_candidate", handleIceCandidate);
+        socket.off("call_signal", handleCallSignal);
+      };
+    }
+  }, [socket, isConnected, handleNewMessage]);
 
   // Close menu when clicking outside
   useEffect(() => {
