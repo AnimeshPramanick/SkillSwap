@@ -90,6 +90,10 @@ web_modules/
 .cache
 .parcel-cache
 
+# Webpack cache
+.cache/
+**/node_modules/.cache/
+
 # Next.js build output
 .next
 out
