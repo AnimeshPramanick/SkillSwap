@@ -66,13 +66,16 @@ const MessagesPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (silent = false) => {
     // Prevent duplicate fetches
     if (fetchingConversationsRef.current) return;
 
     try {
       fetchingConversationsRef.current = true;
-      setLoading(true);
+      // Only show loading spinner on initial load, not on background updates
+      if (!silent) {
+        setLoading(true);
+      }
       const response = await apiService.messages.getConversations();
       setConversations(response.data.conversations || []);
     } catch (error) {
@@ -83,7 +86,9 @@ const MessagesPage = () => {
         toast.error("Failed to load conversations");
       }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
       fetchingConversationsRef.current = false;
     }
   };
@@ -97,8 +102,8 @@ const MessagesPage = () => {
       setMessages(response.data.messages || []);
       // Mark as read
       await apiService.messages.markAsRead(userId);
-      // Refresh conversations to update unread count
-      fetchConversations();
+      // Refresh conversations to update unread count (silently)
+      fetchConversations(true);
       // Refresh global unread count for navbar badge
       refreshUnreadCount();
     } catch (error) {
@@ -154,8 +159,8 @@ const MessagesPage = () => {
         console.log("Message is for a different conversation");
       }
 
-      // Always update conversations list to show new message preview
-      fetchConversations();
+      // Always update conversations list to show new message preview (silently, without loading spinner)
+      fetchConversations(true);
       // Refresh global unread count for navbar badge
       refreshUnreadCount();
     },
