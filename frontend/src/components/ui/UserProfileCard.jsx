@@ -61,17 +61,12 @@ const UserProfileCard = ({
   };
 
   return (
-    <div
-      className={`
-      card card-interactive
-      ${className}
-    `}
-    >
+    <div className={`card card-interactive ${className} rounded-xl shadow-card p-4 hover:shadow-lg transition-transform duration-300 dark:bg-neutral-50 dark:border dark:border-neutral-200`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           {/* Avatar */}
-          <div className="avatar avatar-lg relative">
+          <div className="avatar avatar-lg relative rounded-xl overflow-hidden border border-neutral-50">
             {user.profile?.avatar ? (
               <img
                 src={user.profile.avatar}
@@ -92,7 +87,7 @@ const UserProfileCard = ({
 
           {/* User Info */}
           <div>
-            <h3 className="text-h3">{user.profile?.name || user.username}</h3>
+            <h3 className="text-h3 text-neutral-900 dark:text-neutral-100">{user.profile?.name || user.username}</h3>
             <div className="flex items-center space-x-2 mt-1">
               <span className="text-small text-neutral-500">
                 @{user.username}
@@ -181,8 +176,8 @@ const UserProfileCard = ({
 
       {/* Skill Alignment (for matches) */}
       {skillAlignment && (
-        <div className="mt-4 p-3 bg-primary-50 rounded-lg">
-          <h5 className="text-sm font-medium text-primary-900 mb-2">
+        <div className="mt-4 p-3 bg-gradient-subtle rounded-lg dark:bg-neutral-100">
+          <h5 className="text-sm font-medium text-primary-900 dark:text-primary-700 mb-2">
             Skill Exchange Opportunity
           </h5>
           {skillAlignment.theyCanTeachMe.length > 0 && (
@@ -191,14 +186,9 @@ const UserProfileCard = ({
                 They can teach you:
               </span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {skillAlignment.theyCanTeachMe.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded"
-                  >
-                    {skill}
-                  </span>
-                ))}
+                  {skillAlignment.theyCanTeachMe.map((skill, index) => (
+                    <span key={index} className="text-xs bg-primary-100 text-primary-800 px-2 py-1 rounded">{skill}</span>
+                  ))}
               </div>
             </div>
           )}
@@ -224,9 +214,7 @@ const UserProfileCard = ({
 
       {/* Location */}
       {user.profile?.location && (
-        <div className="mt-3 text-sm text-neutral-500">
-          📍 {user.profile.location}
-        </div>
+        <div className="mt-3 text-sm text-neutral-500">📍 {user.profile.location}</div>
       )}
 
       {/* Stats */}
@@ -261,7 +249,7 @@ const UserProfileCard = ({
           {onSendMessage && (
             <button
               onClick={handleSendMessage}
-              className="flex-1 btn btn-outline flex items-center justify-center space-x-2"
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-2 rounded-md"
             >
               <ChatBubbleLeftIcon className="w-4 h-4" />
               <span>Message</span>
@@ -271,7 +259,7 @@ const UserProfileCard = ({
           {onRequestVideoCall && (
             <button
               onClick={handleVideoCall}
-              className="flex-1 btn btn-outline flex items-center justify-center space-x-2"
+              className="flex-1 btn btn-outline flex items-center justify-center space-x-2 rounded-md"
               disabled={!user.isOnline}
             >
               <VideoCameraIcon className="w-4 h-4" />
@@ -280,10 +268,7 @@ const UserProfileCard = ({
           )}
 
           {onCreateMatch && !matchScore && (
-            <button
-              onClick={handleCreateMatch}
-              className="flex-1 min-w-full btn btn-primary"
-            >
+            <button onClick={handleCreateMatch} className="flex-1 min-w-full btn btn-primary rounded-md">
               Match
             </button>
           )}

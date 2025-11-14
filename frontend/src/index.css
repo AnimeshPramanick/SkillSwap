@@ -1,6 +1,7 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import "./styles/dashboard.css";
 
 /* Import Google Fonts - Inter */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
@@ -12,12 +13,14 @@
   /* Color System */
   --color-primary-50: #ebf4ff;
   --color-primary-100: #d6e8ff;
-  --color-primary-500: #007aff;
-  --color-primary-700: #0059b8;
-  --color-primary-900: #003b7a;
+  --color-primary-500: #3b82f6;
+  --color-primary-700: #1d4ed8;
+  --color-primary-900: #0b3d91;
 
   --color-neutral-0: #ffffff;
   --color-neutral-50: #f8f9fa;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
   --color-neutral-400: #6c757d;
   --color-neutral-700: #343a40;
   --color-neutral-900: #212529;
@@ -44,11 +47,32 @@
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
-  --shadow-primary: 0 0 0 3px rgba(0, 122, 255, 0.2);
+  --shadow-primary: 0 0 0 3px rgba(59, 130, 246, 0.2);
 
   /* Transitions */
   --transition-fast: 200ms ease-out;
   --transition-base: 300ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Dark Mode */
+html.dark {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-700: #1d4ed8;
+  --color-primary-900: #0b3d91;
+
+  --color-neutral-0: #0a0e27;
+  --color-neutral-50: #111827;
+  --color-neutral-100: #1f2937;
+  --color-neutral-200: #374151;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-700: #d1d5db;
+  --color-neutral-900: #f3f4f6;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.7);
 }
 
 /* Base Styles */
@@ -66,9 +90,38 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: var(--color-neutral-700);
-  background-color: var(--color-neutral-50);
+  background-color: #f3f4f6; /* Tailwind bg-gray-100 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+html.dark body {
+  color: var(--color-neutral-900);
+  /* Use light gray for dark-mode background as requested */
+  background-color: #f3f4f6;
+}
+
+/*
+  Dark-mode background normalization
+  Force common light/background utility classes to display a consistent
+  gray background in dark mode so the app looks cohesive when `html` has
+  the `dark` class. These are intentionally broad overrides and use
+  !important to ensure Tailwind-generated utilities are overridden.
+*/
+html.dark .bg-white,
+html.dark .bg-neutral-50,
+html.dark .bg-gray-50,
+html.dark .bg-gray-100,
+html.dark .bg-neutral-100,
+html.dark .bg-neutral-0 {
+  background-color: #1f2937 !important; /* Tailwind gray-800 */
+}
+
+/* Optional: make cards and panels that used white remain a bit lighter */
+html.dark .card,
+html.dark .bg-card {
+  background-color: #4b5563 !important; /* Tailwind gray-600 */
 }
 
 /* Typography Classes */
@@ -79,10 +132,18 @@ body {
   color: var(--color-neutral-900);
 }
 
+html.dark .text-h1 {
+  color: var(--color-neutral-900);
+}
+
 .text-h2 {
   font-size: 32px;
   line-height: 1.3;
   font-weight: 700;
+  color: var(--color-neutral-900);
+}
+
+html.dark .text-h2 {
   color: var(--color-neutral-900);
 }
 
@@ -93,10 +154,18 @@ body {
   color: var(--color-neutral-900);
 }
 
+html.dark .text-h3 {
+  color: var(--color-neutral-900);
+}
+
 .text-body {
   font-size: 16px;
   line-height: 1.6;
   font-weight: 400;
+  color: var(--color-neutral-700);
+}
+
+html.dark .text-body {
   color: var(--color-neutral-700);
 }
 
@@ -107,10 +176,18 @@ body {
   color: var(--color-neutral-400);
 }
 
+html.dark .text-small {
+  color: var(--color-neutral-400);
+}
+
 .text-label {
   font-size: 14px;
   line-height: 1.4;
   font-weight: 500;
+  color: var(--color-neutral-700);
+}
+
+html.dark .text-label {
   color: var(--color-neutral-700);
 }
 
@@ -142,6 +219,11 @@ body {
   box-shadow: var(--shadow-md);
   padding: var(--space-lg);
   transition: var(--transition-base);
+}
+
+html.dark .card {
+  background-color: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-100);
 }
 
 .card:hover {
@@ -187,6 +269,10 @@ body {
   color: var(--color-neutral-0);
 }
 
+html.dark .btn-primary {
+  color: #ffffff;
+}
+
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-700);
   transform: translateY(-2px);
@@ -202,8 +288,19 @@ body {
   border: 1px solid var(--color-neutral-100);
 }
 
+html.dark .btn-secondary {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-900);
+  border-color: var(--color-neutral-200);
+}
+
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--color-neutral-100);
+  color: var(--color-neutral-900);
+}
+
+html.dark .btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-neutral-200);
   color: var(--color-neutral-900);
 }
 
@@ -213,9 +310,19 @@ body {
   border: 1px solid var(--color-primary-500);
 }
 
+html.dark .btn-outline {
+  color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+}
+
 .btn-outline:hover:not(:disabled) {
   background-color: var(--color-primary-50);
   color: var(--color-primary-700);
+}
+
+html.dark .btn-outline:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
 }
 
 /* Form Styles */
@@ -231,6 +338,10 @@ body {
   margin-bottom: var(--space-sm);
 }
 
+html.dark .form-label {
+  color: var(--color-neutral-200);
+}
+
 .form-input {
   width: 100%;
   padding: var(--space-md);
@@ -244,6 +355,12 @@ body {
     box-shadow var(--transition-fast);
 }
 
+html.dark .form-input {
+  background-color: var(--color-neutral-50);
+  border-color: var(--color-neutral-100);
+  color: var(--color-neutral-900);
+}
+
 .form-input::placeholder {
   color: var(--color-neutral-400);
 }
@@ -251,7 +368,7 @@ body {
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .form-input.error {
@@ -283,12 +400,21 @@ body {
   margin: var(--space-xs) var(--space-xs) var(--space-xs) 0;
 }
 
+html.dark .skill-tag {
+  background-color: #1e3a8a;
+  color: #93c5fd;
+}
+
 .skill-tag-remove {
   margin-left: var(--space-xs);
   cursor: pointer;
   color: var(--color-primary-700);
   opacity: 0.7;
   transition: opacity var(--transition-fast);
+}
+
+html.dark .skill-tag-remove {
+  color: #60a5fa;
 }
 
 .skill-tag-remove:hover {
@@ -309,6 +435,11 @@ body {
   align-items: center;
 }
 
+html.dark .navbar {
+  background-color: var(--color-neutral-50);
+  border-bottom-color: var(--color-neutral-100);
+}
+
 .nav-link {
   color: var(--color-neutral-700);
   text-decoration: none;
@@ -316,6 +447,26 @@ body {
   border-radius: var(--radius-sm);
   transition: color var(--transition-fast);
   font-weight: 500;
+}
+
+html.dark .nav-link {
+  color: var(--color-neutral-700);
+}
+
+.nav-link:hover {
+  color: var(--color-neutral-900);
+}
+
+html.dark .nav-link:hover {
+  color: var(--color-neutral-900);
+}
+
+.nav-link.active {
+  color: var(--color-primary-500);
+}
+
+html.dark .nav-link.active {
+  color: var(--color-primary-500);
 }
 
 .nav-link:hover {
@@ -338,6 +489,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+html.dark .avatar {
+  background-color: var(--color-neutral-100);
+  border-color: var(--color-neutral-200);
 }
 
 .avatar-sm {
@@ -639,6 +795,230 @@ input[type="range"].slider:focus::-webkit-slider-thumb {
 
 input[type="range"].slider:focus::-moz-range-thumb {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Modal and Overlay Dark Mode Support */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: var(--color-neutral-50);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-200);
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-300);
+}
+
+/* React Modal Styles for Dark Mode */
+html.dark .ReactModal__Overlay {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+html.dark .ReactModal__Content {
+  background-color: var(--color-neutral-50) !important;
+  color: var(--color-neutral-900) !important;
+  border-radius: var(--radius-lg);
+}
+
+/* Generic Modal Dialog Dark Mode */
+html.dark [role="dialog"],
+html.dark .modal,
+html.dark .dialog {
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+  border: 1px solid var(--color-neutral-100);
+}
+
+html.dark .modal-header,
+html.dark .dialog-header {
+  background-color: var(--color-neutral-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+html.dark .modal-title,
+html.dark .dialog-title {
+  color: var(--color-neutral-900);
+}
+
+html.dark .modal-body,
+html.dark .dialog-body {
+  color: var(--color-neutral-700);
+}
+
+html.dark .modal-footer,
+html.dark .dialog-footer {
+  background-color: var(--color-neutral-100);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* Card Variants for Dark Mode */
+html.dark .card-elevated {
+  background-color: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .card-outline {
+  background-color: transparent;
+  border: 1px solid var(--color-neutral-200);
+}
+
+/* Button Group Dark Mode */
+html.dark .btn-group {
+  border: 1px solid var(--color-neutral-200);
+}
+
+html.dark .btn-group > .btn {
+  border-color: var(--color-neutral-200);
+}
+
+/* Tab Navigation Dark Mode */
+html.dark .tabs,
+html.dark .tab-list {
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+html.dark .tab-item {
+  color: var(--color-neutral-700);
+}
+
+html.dark .tab-item.active {
+  color: var(--color-primary-500);
+  border-bottom-color: var(--color-primary-500);
+}
+
+/* Enhanced Utility Classes for Modern UI */
+.hover-lift {
+  transition: transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 300ms ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.hover-scale {
+  transition: transform 300ms ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+.gradient-subtle {
+  background: linear-gradient(135deg, #F8FAFF 0%, #F1F5FF 100%);
+}
+
+html.dark .gradient-subtle {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shadow-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-lg {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(10px);
+}
+
+.transition-smooth {
+  transition: all 300ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.transition-fast {
+  transition: all 150ms ease;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Status badges with new colors */
+.badge-success {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html.dark .badge-success {
+  background-color: rgba(46, 125, 50, 0.2);
+  color: #81c784;
+}
+
+.badge-warning {
+  background-color: #FFF3E0;
+  color: #E65100;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html.dark .badge-warning {
+  background-color: rgba(230, 81, 0, 0.2);
+  color: #ffb74d;
+}
+
+.badge-info {
+  background-color: #E3F2FD;
+  color: #0D47A1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html.dark .badge-info {
+  background-color: rgba(13, 71, 161, 0.2);
+  color: #64b5f6;
+}
+
+.badge-danger {
+  background-color: #FFEBEE;
+  color: #C62828;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html.dark .badge-danger {
+  background-color: rgba(198, 40, 40, 0.2);
+  color: #ef5350;
 }
 
 /* Dark mode support (future enhancement) */

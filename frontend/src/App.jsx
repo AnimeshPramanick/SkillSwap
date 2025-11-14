@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { SocketProvider } from "./contexts/SocketContext.jsx";
 import { MessagesProvider } from "./contexts/MessagesContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { useAuth } from "./hooks/useAuth.jsx";
 
 // Layout Components
@@ -247,45 +248,47 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
-          <SocketProvider>
-            <MessagesProvider>
-              <div className="app">
-                <AppRoutes />
-              </div>
-              {/* Toast Notifications */}
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: "#FFFFFF",
-                    color: "#343A40",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                    border: "1px solid #F8F9FA",
-                  },
-                  success: {
-                    iconTheme: {
-                      primary: "#28A745",
-                      secondary: "#FFFFFF",
+          <ThemeProvider>
+            <SocketProvider>
+              <MessagesProvider>
+                <div className="app">
+                  <AppRoutes />
+                </div>
+                {/* Toast Notifications */}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: "#FFFFFF",
+                      color: "#343A40",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                      border: "1px solid #F8F9FA",
                     },
-                  },
-                  error: {
-                    iconTheme: {
-                      primary: "#DC3545",
-                      secondary: "#FFFFFF",
+                    success: {
+                      iconTheme: {
+                        primary: "#28A745",
+                        secondary: "#FFFFFF",
+                      },
                     },
-                  },
-                  loading: {
-                    iconTheme: {
-                      primary: "#007AFF",
-                      secondary: "#FFFFFF",
+                    error: {
+                      iconTheme: {
+                        primary: "#DC3545",
+                        secondary: "#FFFFFF",
+                      },
                     },
-                  },
-                }}
-              />
-            </MessagesProvider>
-          </SocketProvider>
+                    loading: {
+                      iconTheme: {
+                        primary: "#3B82F6",
+                        secondary: "#FFFFFF",
+                      },
+                    },
+                  }}
+                />
+              </MessagesProvider>
+            </SocketProvider>
+          </ThemeProvider>
         </AuthProvider>
       </Router>
     </QueryClientProvider>

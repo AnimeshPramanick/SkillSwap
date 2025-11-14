@@ -81,25 +81,23 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-cyan-50 dark:from-neutral-900 dark:via-blue-950 dark:to-cyan-950">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <img
-                src="/logo.png"
-                alt="SkillSwap Logo"
-                className="w-10 h-10 object-cover rounded-full"
-              />
-              <span className="text-xl font-bold text-neutral-900">
+            <div className="flex items-center space-x-3 group cursor-pointer">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                <span className="text-white font-bold">SS</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                 SkillSwap
               </span>
             </div>
             <div className="flex items-center space-x-4">
               <Link
                 to="/login"
-                className="text-neutral-700 hover:text-neutral-900 font-medium"
+                className="text-neutral-300 hover:text-blue-400 font-medium"
               >
                 Login
               </Link>
@@ -115,11 +113,16 @@ const LandingPage = () => {
       <section className="section-padding">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-h1 mb-6">
+            <div className="mb-6 inline-block">
+              <span className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-bold">
+                ✨ The Smart Way to Learn
+              </span>
+            </div>
+            <h1 className="text-5xl sm:text-6xl font-bold mb-6 leading-tight">
               Exchange Skills, Build Connections,{" "}
-              <span className="text-primary-500">Grow Together</span>
+              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">Grow Together</span>
             </h1>
-            <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-neutral-600 dark:text-neutral-300 mb-8 max-w-2xl mx-auto leading-relaxed">
               Connect with people who want to learn what you know, and teach
               what they know. The smart way to acquire new skills through
               meaningful exchanges.
@@ -127,14 +130,14 @@ const LandingPage = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
                 to="/register"
-                className="btn btn-primary text-lg px-8 py-3 w-full sm:w-auto"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-lg font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl w-full sm:w-auto text-center flex items-center justify-center space-x-2"
               >
-                Start Swapping Skills
-                <ArrowRightIcon className="w-5 h-5 ml-2" />
+                <span>Start Swapping Skills</span>
+                <ArrowRightIcon className="w-5 h-5" />
               </Link>
               <Link
                 to="/discover"
-                className="btn btn-outline text-lg px-8 py-3 w-full sm:w-auto"
+                className="px-8 py-3 bg-white dark:bg-neutral-800 text-blue-600 dark:text-blue-400 border-2 border-blue-600 dark:border-blue-400 rounded-lg font-bold text-lg hover:bg-blue-50 dark:hover:bg-neutral-700 transition-all duration-300 w-full sm:w-auto text-center"
               >
                 Explore Skills
               </Link>
@@ -144,15 +147,15 @@ const LandingPage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-900 dark:to-cyan-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-4xl font-bold text-primary-500 mb-2">
+              <div key={index} className="text-white">
+                <div className="text-4xl font-bold mb-2 drop-shadow-lg">
                   {stat.number}
                 </div>
-                <div className="text-neutral-600">{stat.label}</div>
+                <div className="text-white/90 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -160,11 +163,11 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="section-padding bg-neutral-50">
+      <section className="section-padding bg-neutral-50 dark:bg-neutral-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-h2 mb-4">Everything You Need to Swap Skills</h2>
-            <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 text-neutral-900 dark:text-white">Everything You Need to Swap Skills</h2>
+            <p className="text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
               Our platform provides all the tools you need for successful skill
               exchanges
             </p>
@@ -173,13 +176,22 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
+              const colors = [
+                "from-blue-500 to-blue-600",
+                "from-cyan-500 to-cyan-600",
+                "from-green-500 to-green-600",
+                "from-purple-500 to-purple-600",
+              ];
               return (
-                <div key={index} className="card text-center hover-lift">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <IconComponent className="w-6 h-6 text-primary-500" />
+                <div
+                  key={index}
+                  className="bg-blue-300  dark:bg-gray-700 rounded-xl p-8 shadow-md hover:bg-gray-600 hover:border hover:border-blue-400 transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:shadow-xl"
+                >
+                  <div className={`w-14 h-14 bg-gradient-to-br ${colors[index]} rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                    <IconComponent className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-h3 mb-3">{feature.title}</h3>
-                  <p className="text-neutral-600">{feature.description}</p>
+                  <h3 className="text-lg font-bold text-neutral-800 dark:text-white mb-3 text-center">{feature.title}</h3>
+                  <p className="text-neutral-600 dark:text-neutral-300 text-center">{feature.description}</p>
                 </div>
               );
             })}
@@ -192,8 +204,8 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-h2 mb-6">Why Choose SkillSwap?</h2>
-              <p className="text-xl text-neutral-600 mb-8">
+              <h2 className="text-4xl font-bold mb-6 text-neutral-900 dark:text-white">Why Choose SkillSwap?</h2>
+              <p className="text-xl text-neutral-800 dark:text-neutral-400 mb-8 leading-relaxed">
                 We make skill exchange simple, safe, and effective. Join
                 thousands of people who are already growing their skills through
                 meaningful connections.
@@ -203,18 +215,18 @@ const LandingPage = () => {
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <CheckCircleIcon className="w-5 h-5 text-success" />
-                    <span className="text-neutral-700">{benefit}</span>
+                    <span className="text-neutral-300">{benefit}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg">
+            <div className="bg-white/10 rounded-2xl p-8 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.4)] border border-white/10">
               <div className="text-center mb-6">
                 <div className="text-3xl font-bold text-primary-500 mb-2">
                   Free to Use
                 </div>
-                <div className="text-neutral-600">
+                <div className="text-white/40">
                   No hidden fees, no subscriptions. Exchange skills freely.
                 </div>
               </div>
@@ -225,7 +237,7 @@ const LandingPage = () => {
                     <div className="text-2xl font-bold text-primary-700">
                       100%
                     </div>
-                    <div className="text-sm text-primary-600">
+                    <div className="text-sm text-primary-700">
                       Skill-focused
                     </div>
                   </div>
@@ -233,7 +245,7 @@ const LandingPage = () => {
                     <div className="text-2xl font-bold text-primary-700">
                       24/7
                     </div>
-                    <div className="text-sm text-primary-600">Support</div>
+                    <div className="text-sm text-primary-700">Support</div>
                   </div>
                 </div>
               </div>
@@ -247,7 +259,7 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-h2 mb-4">What Our Community Says</h2>
-            <p className="text-xl text-neutral-600">
+            <p className="text-xl text-neutral-500">
               Real stories from people who have transformed their skills
             </p>
           </div>
@@ -257,10 +269,10 @@ const LandingPage = () => {
               <div key={index} className="card">
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="w-5 h-5 text-yellow-400" />
+                    <StarIcon key={i} className="w-5 h-5 text-yellow-500" />
                   ))}
                 </div>
-                <p className="text-neutral-700 mb-4 italic">
+                <p className="text-neutral-900 mb-4 italic">
                   "{testimonial.content}"
                 </p>
                 <div className="flex items-center space-x-3">
@@ -275,7 +287,7 @@ const LandingPage = () => {
                     <div className="font-semibold text-neutral-900">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-neutral-500">
+                    <div className="text-sm text-white/50">
                       {testimonial.role}
                     </div>
                   </div>
@@ -289,7 +301,8 @@ const LandingPage = () => {
       {/* CTA Section */}
       <section className="section-padding">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center bg-gradient-primary rounded-2xl p-12 text-white">
+          <div className="text-center bg-gradient-to-br from-blue-600 to-blue-700
+ rounded-2xl p-12 text-white">
             <h2 className="text-h2 mb-4">Ready to Start Your Skill Journey?</h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
               Join our community of learners and teachers. Start exchanging
@@ -299,7 +312,7 @@ const LandingPage = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
                 to="/register"
-                className="bg-white text-primary-500 hover:bg-neutral-50 font-semibold px-8 py-3 rounded-lg transition-colors w-full sm:w-auto"
+                className="bg-white text-blue-700 hover:bg-neutral-50 font-semibold px-8 py-3 rounded-lg transition-colors w-full sm:w-auto"
               >
                 Create Free Account
               </Link>
@@ -323,23 +336,23 @@ const LandingPage = () => {
                 <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">SS</span>
                 </div>
-                <span className="text-xl font-bold text-neutral-900">
+                <span className="text-xl font-bold text-blue-700">
                   SkillSwap
                 </span>
               </div>
-              <p className="text-neutral-600">
+              <p className="text-neutral-500">
                 The smart way to exchange skills and build meaningful
                 connections.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-neutral-900 mb-4">Platform</h4>
+              <h4 className="font-semibold text-neutral-400 mb-4">Platform</h4>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/discover"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Discover
                   </Link>
@@ -347,7 +360,7 @@ const LandingPage = () => {
                 <li>
                   <Link
                     to="/matches"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Matches
                   </Link>
@@ -355,7 +368,7 @@ const LandingPage = () => {
                 <li>
                   <Link
                     to="/sessions"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Sessions
                   </Link>
@@ -364,12 +377,12 @@ const LandingPage = () => {
             </div>
 
             <div>
-              <h4 className="font-semibold text-neutral-900 mb-4">Support</h4>
+              <h4 className="font-semibold text-neutral-400 mb-4">Support</h4>
               <ul className="space-y-2">
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Help Center
                   </a>
@@ -377,7 +390,7 @@ const LandingPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Contact Us
                   </a>
@@ -385,7 +398,7 @@ const LandingPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Privacy Policy
                   </a>
@@ -394,12 +407,12 @@ const LandingPage = () => {
             </div>
 
             <div>
-              <h4 className="font-semibold text-neutral-900 mb-4">Company</h4>
+              <h4 className="font-semibold text-neutral-400 mb-4">Company</h4>
               <ul className="space-y-2">
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     About
                   </a>
@@ -407,7 +420,7 @@ const LandingPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Blog
                   </a>
@@ -415,7 +428,7 @@ const LandingPage = () => {
                 <li>
                   <a
                     href="#"
-                    className="text-neutral-600 hover:text-primary-500"
+                    className="text-neutral-500 hover:text-primary-500"
                   >
                     Careers
                   </a>

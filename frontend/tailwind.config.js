@@ -3,23 +3,58 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
+      // Center container by default for nicer layout
+      container: {
+        center: true,
+        padding: '1rem'
+      },
       // Color System based on Design Specification
       colors: {
         primary: {
-          50: '#EBF4FF',
-          100: '#D6E8FF',
-          500: '#007AFF',
-          700: '#0059B8',
-          900: '#003B7A'
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          500: '#3B82F6', // blue-500
+          700: '#1D4ED8', // blue-700
+          900: '#0B3D91'
+        },
+        // Alternate palettes for quick preview
+        indigo: {
+          50: '#EEF2FF',
+          100: '#E0E7FF',
+          500: '#6366F1', // indigo-500
+          700: '#4F46E5', // indigo-700
+          900: '#312E81'
+        },
+        tealPrimary: {
+          50: '#ECFEFF',
+          100: '#CFFAFE',
+          500: '#06B6D4', // teal-500
+          700: '#0891B2', // teal-700
+          900: '#064E57'
         },
         neutral: {
           0: '#FFFFFF',
           50: '#F8F9FA',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
           400: '#6C757D',
+          500: '#64748B',
+          600: '#475569',
           700: '#343A40',
-          900: '#212529'
+          800: '#1E293B',
+          900: '#212529',
+          950: '#0F172A'
+        },
+        dark: {
+          bg: '#0F172A',
+          surface: '#1E293B',
+          border: '#334155',
+          text: '#F1F5F9',
+          textMuted: '#94A3B8'
         },
         success: '#28A745',
         warning: '#FFC107',
@@ -63,13 +98,14 @@ module.exports = {
         'xl': '24px'   // radius-xl
       },
       
-      // Shadows - Subtle & Layered
+      // Shadows - Subtle & Layered (refined for modern look)
       boxShadow: {
-        'sm': '0 2px 4px rgba(0, 0, 0, 0.04)',
-        'md': '0 4px 12px rgba(0, 0, 0, 0.08)',
-        'lg': '0 10px 30px rgba(0, 0, 0, 0.12)',
-        'xl': '0 20px 40px rgba(0, 0, 0, 0.16)',
-        'primary': '0 0 0 3px rgba(0, 122, 255, 0.2)'
+        'sm': '0 2px 6px rgba(15,23,42,0.04)',
+        'md': '0 8px 24px rgba(15,23,42,0.06)',
+        'lg': '0 12px 40px rgba(15,23,42,0.08)',
+        'xl': '0 24px 64px rgba(15,23,42,0.12)',
+        'card': '0 10px 30px rgba(15,23,42,0.08)',
+        'focus-ring': '0 0 0 4px rgba(108,92,231,0.12)'
       },
       
       // Animations & Transitions
@@ -116,10 +152,24 @@ module.exports = {
       
       // Background Patterns
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #007AFF 0%, #0059B8 100%)',
-        'gradient-subtle': 'linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+        'gradient-primary-indigo': 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+        'gradient-primary-teal': 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+        'gradient-subtle': 'linear-gradient(135deg, #F8FAFF 0%, #F1F5FF 100%)',
         'pattern-dots': 'radial-gradient(circle, #6C757D 1px, transparent 1px)',
         'pattern-grid': 'linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px)'
+      },
+
+      // Animations
+      keyframes: {
+        float: {
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-6px)' },
+          '100%': { transform: 'translateY(0px)' }
+        }
+      },
+      animation: {
+        float: 'float 6s ease-in-out infinite'
       },
       
       // Custom Utilities

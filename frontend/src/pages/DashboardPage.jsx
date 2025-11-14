@@ -152,14 +152,14 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-800 antialiased">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-h1 mb-2">
+        <div className="mb-8 bg-gradient-to-r from-teal-500 via-cyan-500 to-indigo-600 dark:from-cyan-700 dark:via-indigo-800 dark:to-indigo-900 text-white rounded-2xl p-8 shadow-lg">
+          <h1 className="text-4xl font-bold mb-2">
             Welcome back, {user?.profile?.name || user?.username}! 👋
           </h1>
-          <p className="text-xl text-neutral-600">
+          <p className="text-lg opacity-95">
             Ready to continue your skill exchange journey?
           </p>
         </div>
@@ -179,20 +179,37 @@ const DashboardPage = () => {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {dashboardStats.map((stat, index) => {
             const IconComponent = stat.icon;
+            const gradients = [
+              "from-blue-500 to-blue-600",
+              "from-cyan-500 to-cyan-600",
+              "from-green-500 to-green-600",
+              "from-amber-500 to-amber-600",
+            ];
+
             return (
-              <div key={index} className="card">
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg bg-neutral-50`}>
-                    <IconComponent className={`w-5 h-5 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-neutral-900">
-                      {stat.value}
+              <div
+                key={index}
+                className={`bg-white dark:bg-gray-800 rounded-xl border-2 border-blue-500 dark:border-blue-400 shadow-sm transition-all duration-300 overflow-hidden group`}
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div
+                      className={`p-3 rounded-lg bg-gradient-to-br ${gradients[index]} text-white`}
+                    >
+                      <IconComponent className="w-6 h-6" />
                     </div>
-                    <div className="text-sm text-neutral-500">{stat.label}</div>
+                    <span className="text-xs font-semibold px-2 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-full">
+                      Today
+                    </span>
+                  </div>
+                  <div className="text-3xl md:text-4xl font-extrabold leading-tight text-gray-900 dark:text-white drop-shadow-sm">
+                    {stat.value}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    {stat.label}
                   </div>
                 </div>
               </div>
@@ -202,27 +219,32 @@ const DashboardPage = () => {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-h3 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <h2 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {quickActions.map((action, index) => {
               const IconComponent = action.icon;
+              const colors = [
+                "from-blue-500 to-blue-600",
+                "from-cyan-500 to-cyan-600",
+                "from-green-500 to-green-600",
+                "from-purple-500 to-purple-600",
+              ];
               return (
                 <Link
                   key={index}
                   to={action.href}
-                  className="card card-hover group"
+                  className="group relative overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
                 >
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div
-                      className={`p-2 rounded-lg ${action.color} group-hover:scale-110 transition-transform`}
-                    >
-                      <IconComponent className="w-5 h-5 text-white" />
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${colors[index]}`}></div>
+                  <div className="p-6">
+                    <div className={`p-3 rounded-lg bg-gradient-to-br ${colors[index]} text-white w-fit mb-3 group-hover:scale-110 transition-transform`}>
+                      <IconComponent className="w-6 h-6" />
                     </div>
-                    <h3 className="text-h3 group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-bold text-lg text-neutral-900 dark:text-white mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-blue-500 transition-all">
                       {action.title}
                     </h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">{action.description}</p>
                   </div>
-                  <p className="text-neutral-600">{action.description}</p>
                 </Link>
               );
             })}
@@ -235,42 +257,48 @@ const DashboardPage = () => {
             {/* Recent Matches */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-h3">Recent Matches</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Recent Matches</h2>
                 <Link
                   to="/matches"
-                  className="text-primary-500 hover:text-primary-600 font-medium"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm"
                 >
-                  View all
+                  View all →
                 </Link>
               </div>
 
               {recentMatches.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {recentMatches.slice(0, 3).map((match, index) => (
-                    <div key={index} className="card">
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-neutral-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+                    >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="avatar avatar-md">
-                            {match.otherParticipant?.avatar ? (
-                              <img
-                                src={match.otherParticipant.avatar}
-                                alt={match.otherParticipant.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-primary-100 flex items-center justify-center">
-                                <span className="text-primary-500 font-semibold">
-                                  {match.otherParticipant?.name?.charAt(0) ||
-                                    "U"}
-                                </span>
-                              </div>
-                            )}
+                        <div className="flex items-center space-x-4">
+                          <div className="relative">
+                            <div className="avatar avatar-md">
+                              {match.otherParticipant?.avatar ? (
+                                <img
+                                  src={match.otherParticipant.avatar}
+                                  alt={match.otherParticipant.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                  <span className="text-white font-semibold text-lg">
+                                    {match.otherParticipant?.name?.charAt(0) ||
+                                      "U"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                           </div>
                           <div>
-                            <div className="font-semibold text-neutral-900">
+                            <div className="font-semibold text-neutral-900 dark:text-white">
                               {match.otherParticipant?.name || "Unknown User"}
                             </div>
-                            <div className="text-sm text-neutral-500">
+                            <div className="text-sm text-neutral-500 dark:text-neutral-400">
                               Match created{" "}
                               {(() => {
                                 try {
@@ -290,7 +318,7 @@ const DashboardPage = () => {
                         </div>
                         <Link
                           to={`/messages/${match.otherParticipant?.id}`}
-                          className="btn btn-outline btn-sm"
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors"
                         >
                           Message
                         </Link>
@@ -299,15 +327,15 @@ const DashboardPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="card text-center py-8">
-                  <UserGroupIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                <div className="bg-white dark:bg-neutral-800 rounded-xl text-center py-12 shadow-md">
+                  <UserGroupIcon className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                     No matches yet
                   </h3>
-                  <p className="text-neutral-600 mb-4">
+                  <p className="text-neutral-600 dark:text-neutral-400 mb-6">
                     Start by discovering people with complementary skills
                   </p>
-                  <Link to="/discover" className="btn btn-primary">
+                  <Link to="/discover" className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                     Find Matches
                   </Link>
                 </div>
@@ -317,29 +345,32 @@ const DashboardPage = () => {
             {/* Upcoming Sessions */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-h3">Upcoming Sessions</h2>
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Upcoming Sessions</h2>
                 <Link
                   to="/sessions"
-                  className="text-primary-500 hover:text-primary-600 font-medium"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm"
                 >
-                  View all
+                  View all →
                 </Link>
               </div>
 
               {upcomingSessions.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {upcomingSessions.map((session, index) => (
-                    <div key={index} className="card">
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-neutral-800 rounded-xl p-5 shadow-md hover:shadow-lg transition-all duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+                    >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <CalendarIcon className="w-5 h-5 text-blue-500" />
+                        <div className="flex items-center space-x-4">
+                          <div className="p-3 bg-gradient-to-br from-cyan-400 to-cyan-600 text-white rounded-lg">
+                            <CalendarIcon className="w-6 h-6" />
                           </div>
-                          <div>
-                            <div className="font-semibold text-neutral-900">
+                          <div className="flex-1">
+                            <div className="font-semibold text-neutral-900 dark:text-white">
                               {session.skill} Session
                             </div>
-                            <div className="text-sm text-neutral-500">
+                            <div className="text-sm text-neutral-500 dark:text-neutral-400">
                               {(() => {
                                 try {
                                   if (!session.scheduledAt) return "Date TBD";
@@ -359,10 +390,12 @@ const DashboardPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-medium text-neutral-900">
-                            {session.duration} min
+                          <div className="inline-block px-3 py-1 bg-neutral-100 dark:bg-neutral-700 rounded-full">
+                            <div className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              {session.duration} min
+                            </div>
                           </div>
-                          <div className="text-xs text-neutral-500 capitalize">
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400 capitalize mt-1">
                             {session.sessionType}
                           </div>
                         </div>
@@ -371,15 +404,15 @@ const DashboardPage = () => {
                   ))}
                 </div>
               ) : (
-                <div className="card text-center py-8">
-                  <CalendarIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                <div className="bg-white dark:bg-neutral-800 rounded-xl text-center py-12 shadow-md">
+                  <CalendarIcon className="w-16 h-16 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
                     No upcoming sessions
                   </h3>
-                  <p className="text-neutral-600 mb-4">
+                  <p className="text-neutral-600 dark:text-neutral-400 mb-6">
                     Schedule your first learning session
                   </p>
-                  <Link to="/sessions" className="btn btn-primary">
+                  <Link to="/sessions" className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                     Schedule Session
                   </Link>
                 </div>
@@ -390,10 +423,10 @@ const DashboardPage = () => {
           {/* Right Column */}
           <div className="space-y-8">
             {/* User Profile Summary */}
-            <div className="card">
-              <h3 className="text-h3 mb-4">Your Profile</h3>
-              <div className="text-center">
-                <div className="avatar avatar-xl mx-auto mb-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-md overflow-hidden">
+              <div className="h-20 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+              <div className="px-6 py-4 text-center -mt-10 relative z-10">
+                <div className="avatar avatar-xl mx-auto mb-3 border-4 border-white dark:border-neutral-800">
                   {user?.profile?.avatar ? (
                     <img
                       src={user.profile.avatar}
@@ -401,42 +434,42 @@ const DashboardPage = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-primary-100 flex items-center justify-center">
-                      <span className="text-primary-500 font-semibold text-xl">
+                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                      <span className="text-white font-semibold text-2xl">
                         {user?.profile?.name?.charAt(0) || "U"}
                       </span>
                     </div>
                   )}
                 </div>
-                <h4 className="text-lg font-semibold text-neutral-900 mb-2">
+                <h4 className="text-xl font-bold text-neutral-900 dark:text-white mb-1">
                   {user?.profile?.name || user?.username}
                 </h4>
-                <p className="text-sm text-neutral-600 mb-4">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
                   {user?.profile?.bio || "No bio added yet"}
                 </p>
 
                 {/* Skills Preview */}
                 <div className="mb-4">
-                  <div className="text-sm font-medium text-neutral-700 mb-2">
+                  <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2 uppercase tracking-wider">
                     Your Skills
                   </div>
-                  <div className="flex flex-wrap gap-1 justify-center">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {user?.skills?.teachable
                       ?.slice(0, 3)
                       .map((skill, index) => (
-                        <span key={index} className="skill-tag text-xs">
+                        <span key={index} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 text-xs font-medium px-3 py-1 rounded-full">
                           {skill}
                         </span>
                       ))}
                     {user?.skills?.teachable?.length > 3 && (
-                      <span className="text-xs text-neutral-500">
-                        +{user.skills.teachable.length - 3} more
+                      <span className="text-xs text-neutral-600 dark:text-neutral-400 pt-1">
+                        +{user.skills.teachable.length - 3}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <Link to="/profile" className="btn btn-outline w-full">
+                <Link to="/profile" className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                   Edit Profile
                 </Link>
               </div>
@@ -444,25 +477,25 @@ const DashboardPage = () => {
 
             {/* Skill Suggestions */}
             {skillSuggestions.length > 0 && (
-              <div className="card">
-                <h3 className="text-h3 mb-4">Skill Suggestions</h3>
-                <p className="text-sm text-neutral-600 mb-4">
+              <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-md p-6">
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Skill Suggestions</h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                   Based on your interests, you might want to learn:
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-3 mb-4">
                   {skillSuggestions.slice(0, 5).map((skill, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
                     >
-                      <span className="text-sm text-neutral-700">{skill}</span>
-                      <button className="text-xs text-primary-500 hover:text-primary-600 font-medium">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white">{skill}</span>
+                      <button className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
                         Add
                       </button>
                     </div>
                   ))}
                 </div>
-                <Link to="/profile" className="btn btn-outline w-full mt-4">
+                <Link to="/profile" className="block w-full px-4 py-2 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-900 dark:text-white rounded-lg font-medium text-center transition-colors">
                   Update Skills
                 </Link>
               </div>

@@ -5,25 +5,25 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-white border-t border-neutral-200 mt-auto">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-gradient-to-r from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-t border-neutral-200 dark:border-neutral-700 mt-auto">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SS</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-base">SS</span>
               </div>
-              <span className="text-xl font-bold text-neutral-900">SkillSwap</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">SkillSwap</span>
             </div>
-            <p className="text-neutral-600 mb-4 max-w-md">
+            <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-md leading-relaxed">
               Connect with people who want to learn what you know, and teach what they know. 
               Build meaningful skill exchanges and grow together.
             </p>
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="text-neutral-400 hover:text-primary-500 transition-colors"
+                className="p-2 bg-white dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:shadow-md transition-all"
                 aria-label="Twitter"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -32,7 +32,7 @@ const Footer = () => {
               </a>
               <a
                 href="#"
-                className="text-neutral-400 hover:text-primary-500 transition-colors"
+                className="p-2 bg-white dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:shadow-md transition-all"
                 aria-label="LinkedIn"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -48,27 +48,27 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900 tracking-wider uppercase mb-4">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white tracking-wider uppercase mb-4">
               Platform
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link to="/discover" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <Link to="/discover" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Discover
                 </Link>
               </li>
               <li>
-                <Link to="/matches" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <Link to="/matches" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Matches
                 </Link>
               </li>
               <li>
-                <Link to="/sessions" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <Link to="/sessions" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Sessions
                 </Link>
               </li>
               <li>
-                <Link to="/messages" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <Link to="/messages" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Messages
                 </Link>
               </li>
@@ -77,27 +77,27 @@ const Footer = () => {
 
           {/* Support */}
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900 tracking-wider uppercase mb-4">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white tracking-wider uppercase mb-4">
               Support
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <a href="#" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Help Center
                 </a>
               </li>
               <li>
-                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <a href="#" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Contact Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <a href="#" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors">
+                <a href="#" className="text-neutral-600 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
                   Terms of Service
                 </a>
               </li>
